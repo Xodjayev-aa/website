@@ -64,7 +64,7 @@ logger = logging.getLogger("nexora")
 BASE_DIR = Path(__file__).resolve().parent
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
-DEFAULT_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
+DEFAULT_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b").strip()
 
 _raw_origins = os.getenv("ALLOWED_ORIGINS", "*").strip()
 ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()] or ["*"]
