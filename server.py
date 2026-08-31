@@ -365,11 +365,7 @@ async def chat(
     )
 
 
-@app.exception_handler(HTTPException)
-async def _http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
-    # Keeps the response shape consistent ({"detail": "..."}) so the frontend's
-    # `data?.detail` parsing always works, matching FastAPI's own default shape.
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
 
 
 # ==========================================================================
