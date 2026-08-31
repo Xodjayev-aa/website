@@ -312,17 +312,23 @@ async def chat(
 ) -> ChatResponse:
     tier = get_tier(user.tier)
 
-    # 1) burst guard — cheap, in-memory, protects against hammering the API
+    # 1) Burst guard — prevents rapid hammering
     check_burst_limit(user.id, tier)
 
-    # 2) daily quota — DB-backed, survives restarts, this is the real tier gate
+    # 2) Daily quota check with model fallback logic
     used_today = await get_today_usage(session, user.id)
+    active_model = tier.model 
+
     if tier.daily_message_limit != -1 and used_today >= tier.daily_message_limit:
-        raise HTTPException(
-            status_code=402,  # Payment Required — the frontend treats this as "show upgrade prompt"
-            detail=f"You've used all {tier.daily_message_limit} messages on the {tier.display_name} "
-            "plan today. Upgrade for a higher daily limit.",
-        )
+        if tier.key != "free":
+            # Paid users who hit their limit fall back to the fast 8B model instead of getting blocked
+            active_model = "llama-3.1-8b-instant"
+        else:
+            # Free users hit a wall and are prompted to upgrade
+            raise HTTPException(
+                status_code=402,
+                detail="You've reached your free daily limit. Upgrade to Plus or Pro to continue!",
+            )
 
     if groq_client is None:
         raise HTTPException(
@@ -332,7 +338,7 @@ async def chat(
 
     try:
         completion = await groq_client.chat.completions.create(
-            model=tier.model,
+            model=active_model,  # Uses the fallback model if quota exceeded
             messages=_to_groq_messages(req, tier.history_turns),
             temperature=0.5,
             max_tokens=tier.max_tokens,
@@ -345,14 +351,14 @@ async def chat(
     except GroqAPIError as exc:
         logger.error("Groq API error for user %s: %s", user.id, exc)
         raise HTTPException(status_code=502, detail="The AI provider returned an error. Please try again.") from exc
-    except Exception as exc:  # noqa: BLE001 - never leak internals to the client
+    except Exception as exc:  # noqa: BLE001 - never leak internal tracebacks
         logger.exception("Unexpected error handling /api/chat for user %s", user.id)
         raise HTTPException(status_code=500, detail="Something went wrong generating a response.") from exc
 
     new_count = await increment_usage(session, user.id)
     return ChatResponse(
         answer=answer,
-        model=tier.model,
+        model=active_model,
         tier=tier.key,
         used_today=new_count,
         daily_limit=tier.daily_message_limit,
