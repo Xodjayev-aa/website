@@ -282,6 +282,8 @@
   @media(max-width:1050px){header{padding:.8rem 1rem}nav{order:3;width:100%;justify-content:center}.headerRight{margin-left:auto}}
   @media(max-width:650px){main{padding:1.2rem 1rem 4rem}.hero{gap:1rem}.orbit-wrap{max-width:290px}.chat-box{height:360px}.msg{max-width:90%}.headerRight{width:100%;justify-content:flex-end}.auth-name{display:none}}
 
+  .modal-close{position:absolute;right:.65rem;top:.55rem;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--panel-2);color:var(--ink-dim);cursor:pointer;font-size:1.2rem;line-height:1}.login-card{position:relative}
+  .study-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1.2rem}.study-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1.15rem}.study-card-head{display:flex;justify-content:space-between;align-items:center;gap:.8rem;margin-bottom:.8rem}.study-card-head h3{color:var(--ink);margin:0}.study-card-head>span{font-family:var(--font-mono);font-size:.78rem;color:var(--teal)}.study-input{width:100%;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:.7rem .8rem;outline:none}.study-input:focus,.study-notes:focus{border-color:var(--teal)}.study-input.small{max-width:130px}.study-row{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin-top:.7rem}.goal-bar{height:8px;background:var(--line);border-radius:999px;overflow:hidden;margin:.9rem 0}.goal-bar>div{height:100%;width:0;background:var(--teal);transition:width .3s ease}.timer-display{text-align:center;font-family:var(--font-mono);font-size:3rem;font-weight:700;letter-spacing:2px;margin:.8rem 0}.timer-presets{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center}.timer-status{text-align:center;color:var(--ink-dim);font-size:.78rem;margin-top:.7rem}.flashcard{min-height:120px;border:1px dashed var(--line);border-radius:12px;background:var(--panel-2);display:grid;place-items:center;text-align:center;padding:1rem;cursor:pointer;font-weight:700}.flashcard.flipped{border-color:var(--violet)}.study-notes{width:100%;min-height:150px;resize:vertical;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:.85rem;outline:none;font:inherit}.study-plan{margin-top:1rem}.plan-output{display:grid;gap:.55rem}.plan-item{display:flex;gap:.7rem;align-items:flex-start;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:.75rem}.plan-item .plan-num{font-family:var(--font-mono);color:var(--teal);font-weight:700}.pricing-note{margin-top:1rem;padding:.8rem 1rem;border:1px solid var(--line);border-radius:10px;color:var(--ink-dim);font-size:.8rem}.toast{position:fixed;right:1rem;bottom:1rem;z-index:900;max-width:380px;padding:.85rem 1rem;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:10px;box-shadow:0 15px 40px rgba(0,0,0,.25);font-size:.85rem}.hidden{display:none!important}@media(max-width:760px){.study-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -297,6 +299,7 @@
     <button class="nav-btn" data-page="coding" onclick="switchTab('coding', this)">Web Dev</button>
     <button class="nav-btn" data-page="stem" onclick="switchTab('stem', this)">Math & Physics</button>
     <button class="nav-btn" data-page="ai" onclick="switchTab('ai', this)">Assistant</button>
+    <button class="nav-btn" data-page="study" onclick="switchTab('study', this)">Study Hub</button>
     <button class="nav-btn" data-page="pricing" onclick="switchTab('pricing', this)">Pricing</button>
   </nav>
   <div class="headerRight">
@@ -312,12 +315,13 @@
 
 <div id="loginOverlay" class="login-overlay" style="display:none">
   <div class="login-card">
+    <button class="modal-close" onclick="hideLogin()" aria-label="Close">×</button>
     <h3 data-i18n="loginTitle">Sign in to start learning</h3>
     <p data-i18n="loginSub">Create a free account to save your progress and chat with the Assistant.</p>
-    <a class="google-btn" href="/api/auth/google/login">
+    <button class="google-btn" onclick="startGoogleLogin()">
       <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.66 9c0-.59.1-1.16.29-1.7V4.97H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.03l2.97-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.97l2.97 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
       <span data-i18n="loginBtn">Sign in with Google</span>
-    </a>
+    </button>
   </div>
 </div>
 
@@ -380,6 +384,46 @@
 
     <div class="note" data-i18n="honestNote">
       Heads up: the Assistant works two ways. With no setup at all it runs a keyword + lesson-matching tutor fully offline in your browser. If you run the included server.py with a GROQ_API_KEY, it calls a real language model through your own backend instead — the browser never sees the key. See the note in the Assistant tab for details.
+    </div>
+  </section>
+
+  <section id="page-study" class="page">
+    <div class="section-head"><div>
+      <div class="eyebrow" data-i18n="eyebrowStudy">Study hub</div>
+      <h2 data-i18n="studyHeading">Your personal study cockpit</h2>
+      <p class="sub" data-i18n="studySub">Plan a session, focus with a timer, review flashcards, and keep quick notes — all stored locally in your browser.</p>
+    </div></div>
+    <div class="study-grid">
+      <div class="study-card">
+        <div class="study-card-head"><h3>🎯 <span data-i18n="goalTitle">Today's goal</span></h3><span id="goalProgressText">0%</span></div>
+        <input id="goalInput" class="study-input" maxlength="120" data-i18n-ph="goalPh" placeholder="What do you want to accomplish today?">
+        <div class="study-row"><input id="goalMinutes" class="study-input small" type="number" min="5" max="600" value="60"><button class="btn btn-primary btn-sm" onclick="saveStudyGoal()" data-i18n="saveGoal">Save goal</button></div>
+        <div class="goal-bar"><div id="goalBarFill"></div></div>
+        <button class="btn btn-ghost btn-sm" onclick="completeGoalStep()" data-i18n="completeStep">Complete a study step</button>
+      </div>
+      <div class="study-card">
+        <div class="study-card-head"><h3>⏱️ <span data-i18n="focusTitle">Focus timer</span></h3><span id="timerMode">25:00</span></div>
+        <div class="timer-display" id="focusTimer">25:00</div>
+        <div class="timer-presets"><button class="sugg" onclick="setFocusTimer(25)">25 min</button><button class="sugg" onclick="setFocusTimer(5)">5 min</button><button class="sugg" onclick="setFocusTimer(45)">45 min</button><button class="sugg" onclick="setFocusTimer(60)">60 min</button></div>
+        <div class="study-row"><button class="btn btn-primary btn-sm" id="timerStartBtn" onclick="toggleFocusTimer()">Start</button><button class="btn btn-ghost btn-sm" onclick="resetFocusTimer()">Reset</button></div>
+        <div class="timer-status" id="timerStatus">Ready to focus.</div>
+      </div>
+      <div class="study-card">
+        <div class="study-card-head"><h3>🧠 <span data-i18n="reviewTitle">Smart review</span></h3><span id="reviewCount">0</span></div>
+        <p class="sub" data-i18n="reviewSub">Save difficult vocabulary for quick spaced review. Cards you miss return sooner.</p>
+        <div id="flashcard" class="flashcard" onclick="flipFlashcard()"><div id="flashcardFront">Tap to reveal</div><div id="flashcardBack" class="hidden">—</div></div>
+        <div class="study-row"><button class="btn btn-ghost btn-sm" onclick="reviewAnswer(false)">Need review</button><button class="btn btn-primary btn-sm" onclick="reviewAnswer(true)">Got it</button></div>
+      </div>
+      <div class="study-card">
+        <div class="study-card-head"><h3>📝 <span data-i18n="notesTitle">Quick notes</span></h3><button class="btn btn-sm btn-ghost" onclick="clearStudyNotes()">Clear</button></div>
+        <textarea id="studyNotes" class="study-notes" maxlength="5000" data-i18n-ph="notesPh" placeholder="Write formulas, reminders, questions, or things to review..."></textarea>
+        <div class="study-row"><span class="sub" id="notesSaved">Saved locally</span><button class="btn btn-primary btn-sm" onclick="saveStudyNotes()">Save</button></div>
+      </div>
+    </div>
+    <div class="study-card study-plan">
+      <div class="study-card-head"><h3>🗺️ <span data-i18n="planTitle">Build a study plan</span></h3><button class="btn btn-primary btn-sm" onclick="generateStudyPlan()">Generate</button></div>
+      <div class="toolbar"><select id="planSubject" class="pill"><option value="math">Mathematics</option><option value="physics">Physics</option><option value="coding">Coding</option><option value="languages">Languages</option></select><select id="planTime" class="pill"><option value="30">30 min</option><option value="60" selected>60 min</option><option value="90">90 min</option><option value="120">120 min</option></select><select id="planDays" class="pill"><option value="1">1 day</option><option value="3" selected>3 days</option><option value="7">7 days</option></select></div>
+      <div id="studyPlanOutput" class="plan-output"><span class="sub">Your generated plan will appear here.</span></div>
     </div>
   </section>
 
@@ -511,7 +555,7 @@ console.log("Speed of light: " + speedOfLight + " m/s");</textarea>
     <div class="eyebrow" data-i18n="eyebrowPricing">Plans</div>
     <h2 data-i18n="pricingHeading">Choose your plan</h2>
     <p class="sub" data-i18n="pricingSub">Every plan includes all lessons, quizzes, and the live code console. Paid plans raise your daily Assistant limit and unlock a stronger AI model.</p>
-    <div class="pricing-grid" id="pricingGrid"></div>
+    <div class="pricing-grid" id="pricingGrid"></div><div class="pricing-note">Payments are created server-side. Keep Stripe and Groq secret keys out of this HTML.</div>
     <p class="sub" id="portalLink" style="margin-top:1.2rem"></p>
   </section>
 
@@ -570,7 +614,8 @@ en:{
   loginTitle:"Sign in to start learning", loginSub:"Create a free account to save your progress and chat with the Assistant.", loginBtn:"Sign in with Google",
   upgradeTitle:"You've hit today's limit", upgradeCta:"See plans", upgradeClose:"Not now",
   eyebrowPricing:"Plans", pricingHeading:"Choose your plan", pricingSub:"Every plan includes all lessons, quizzes, and the live code console. Paid plans raise your daily Assistant limit and unlock a stronger AI model.",
-  signOut:"Sign out", currentPlan:"Current plan", manageBilling:"Manage billing", perMonth:"/mo", upgradeBtn:"Upgrade", freeBtn:"Get started"
+  signOut:"Sign out", currentPlan:"Current plan", manageBilling:"Manage billing", perMonth:"/mo", upgradeBtn:"Upgrade", freeBtn:"Get started",
+   eyebrowStudy:"Study hub", studyHeading:"Your personal study cockpit", studySub:"Plan a session, focus with a timer, review flashcards, and keep quick notes — all stored locally in your browser.", goalTitle:"Today's goal", goalPh:"What do you want to accomplish today?", saveGoal:"Save goal", completeStep:"Complete a study step", focusTitle:"Focus timer", reviewTitle:"Smart review", reviewSub:"Save difficult vocabulary for quick spaced review. Cards you miss return sooner.", notesTitle:"Quick notes", notesPh:"Write formulas, reminders, questions, or things to review...", planTitle:"Build a study plan", authNotConfigured:"Google sign-in is not configured on this server yet. Add GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI to the server environment.", authUnavailable:"Google sign-in could not be started. Please check the server configuration.", navPricing:"Pricing"
 },
 uz:{
   brandName:"Nexora Akademiyasi",
@@ -605,7 +650,8 @@ uz:{
   loginTitle:"O'qishni boshlash uchun kiring", loginSub:"Progressingizni saqlash va Assistant bilan suhbatlashish uchun bepul hisob yarating.", loginBtn:"Google orqali kirish",
   upgradeTitle:"Bugungi limitga yetdingiz", upgradeCta:"Tariflarni ko'rish", upgradeClose:"Hozir emas",
   eyebrowPricing:"Tariflar", pricingHeading:"Tarifni tanlang", pricingSub:"Har bir tarif barcha darslar, testlar va jonli kod konsolini o'z ichiga oladi. Pullik tariflar kunlik Assistant limitini oshiradi va kuchliroq AI modelini ochadi.",
-  signOut:"Chiqish", currentPlan:"Joriy tarif", manageBilling:"To'lovni boshqarish", perMonth:"/oy", upgradeBtn:"Yangilash", freeBtn:"Boshlash"
+  signOut:"Chiqish", currentPlan:"Joriy tarif", manageBilling:"To'lovni boshqarish", perMonth:"/oy", upgradeBtn:"Yangilash", freeBtn:"Boshlash",
+   eyebrowStudy:"O‘qish markazi", studyHeading:"Shaxsiy o‘qish boshqaruv paneli", studySub:"Mashg‘ulotni rejalashtiring, taymer bilan fokus qiling, kartochkalarni takrorlang va tezkor qaydlar yozing — barchasi brauzerda saqlanadi.", goalTitle:"Bugungi maqsad", goalPh:"Bugun nimaga erishmoqchisiz?", saveGoal:"Maqsadni saqlash", completeStep:"Bir qadamni yakunlash", focusTitle:"Fokus taymeri", reviewTitle:"Aqlli takrorlash", reviewSub:"Qiyin so‘zlarni tezkor takrorlash uchun saqlang. Xato qilingan kartalar tezroq qaytadi.", notesTitle:"Tezkor qaydlar", notesPh:"Formula, eslatma, savol yoki takrorlash kerak bo‘lgan narsalarni yozing...", planTitle:"O‘qish rejasini tuzish", authNotConfigured:"Google orqali kirish hali serverda sozlanmagan. Server muhitiga GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET va GOOGLE_REDIRECT_URI qo‘shing.", authUnavailable:"Google orqali kirishni boshlab bo‘lmadi. Server sozlamalarini tekshiring.", navPricing:"Tariflar"
 },
 ru:{
   brandName:"Академия Nexora",
@@ -640,7 +686,8 @@ ru:{
   loginTitle:"Войдите, чтобы начать обучение", loginSub:"Создайте бесплатный аккаунт, чтобы сохранять прогресс и общаться с Assistant.", loginBtn:"Войти через Google",
   upgradeTitle:"Вы достигли дневного лимита", upgradeCta:"Посмотреть тарифы", upgradeClose:"Не сейчас",
   eyebrowPricing:"Тарифы", pricingHeading:"Выберите тариф", pricingSub:"Каждый тариф включает все уроки, тесты и живую консоль кода. Платные тарифы увеличивают дневной лимит Assistant и открывают более мощную модель ИИ.",
-  signOut:"Выйти", currentPlan:"Текущий тариф", manageBilling:"Управление подпиской", perMonth:"/мес", upgradeBtn:"Улучшить", freeBtn:"Начать"
+  signOut:"Выйти", currentPlan:"Текущий тариф", manageBilling:"Управление подпиской", perMonth:"/мес", upgradeBtn:"Улучшить", freeBtn:"Начать",
+   eyebrowStudy:"Учебный центр", studyHeading:"Ваш личный учебный центр", studySub:"Планируйте занятие, работайте по таймеру, повторяйте карточки и делайте заметки — всё хранится локально в браузере.", goalTitle:"Цель на сегодня", goalPh:"Чего вы хотите добиться сегодня?", saveGoal:"Сохранить цель", completeStep:"Завершить шаг", focusTitle:"Таймер фокуса", reviewTitle:"Умное повторение", reviewSub:"Сохраняйте сложные слова для быстрого повторения. Ошибочные карточки возвращаются раньше.", notesTitle:"Быстрые заметки", notesPh:"Запишите формулы, напоминания, вопросы или темы для повторения...", planTitle:"Создать учебный план", authNotConfigured:"Вход через Google ещё не настроен на сервере. Добавьте GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET и GOOGLE_REDIRECT_URI в окружение сервера.", authUnavailable:"Не удалось запустить вход через Google. Проверьте конфигурацию сервера.", navPricing:"Тарифы"
 }
 };
 let LANG = localStorage.getItem('nexora_ui_lang') || 'en';
@@ -748,7 +795,7 @@ function switchTab(pageId, btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+pageId).classList.add('active');
   if(btn) btn.classList.add('active');
-  else document.querySelector('.nav-btn[data-page="'+pageId+'"]').classList.add('active');
+  else document.querySelector('.nav-btn[data-page="'+pageId+'"]')?.classList.add('active');
 }
 function switchTabById(id){ switchTab(id); window.scrollTo({top:0,behavior:'smooth'}); }
 
@@ -765,7 +812,7 @@ function applyI18n(){
     if(t[key]!==undefined) el.setAttribute('placeholder', t[key]);
   });
   document.getElementById('nav-home') // no-op guard
-  const navMap = {home:'navHome',languages:'navLang',coding:'navCode',stem:'navStem',ai:'navAi'};
+  const navMap = {home:'navHome',languages:'navLang',coding:'navCode',stem:'navStem',ai:'navAi',study:'studyHeading',pricing:'navPricing'};
   document.querySelectorAll('.nav-btn').forEach(b=>{ b.innerText = t[navMap[b.dataset.page]]; });
   document.getElementById('brandName').innerText = t.brandName;
   document.getElementById('footerText').innerText = t.footerText;
@@ -1119,254 +1166,40 @@ function buildLessonContextFor(promptText){
 function escapeHtml(s){const d=document.createElement('div');d.innerText=s;return d.innerHTML;}
 
 /* Original offline tutor kept as a fallback. */
-function getAIResponse(query){
-  const q=query.toLowerCase();
-  for(const v of VOCAB){if(q.includes(v.en.toLowerCase())||q.includes(v.uz.toLowerCase())||q.includes(v.ru.toLowerCase())){if(LANG==='en')return `"${v.en}" — Uzbek: "${v.uz}", Russian: "${v.ru}". (Level: ${UI.en['lvl'+v.level]})`;if(LANG==='uz')return `"${v.uz}" — Ingliz: "${v.en}", Rus: "${v.ru}". (Daraja: ${UI.uz['lvl'+v.level]})`;return `"${v.ru}" — Английский: "${v.en}", Узбекский: "${v.uz}". (Уровень: ${UI.ru['lvl'+v.level]})`;}}
-  for(const l of [...CODING_LESSONS,...STEM_LESSONS]){const words=l.title.en.toLowerCase().split(/[\s&,()]+/).filter(w=>w.length>3);if(words.some(w=>q.includes(w)))return l.title[LANG]+' — '+l.body[LANG]+(l.formula?' ('+l.formula+')':'');}
-  if(LANG==='en')return "I can help with languages, coding, mathematics, physics, science, and study skills. Ask a full question and I’ll guide you through it.";
-  if(LANG==='uz')return "Men tillar, web-dasturlash, matematika va fizika bo‘yicha yordam bera olaman. To‘liq savol berib ko‘ring.";
-  return "Я могу помочь с языками, веб-разработкой, математикой и физикой. Задайте полный вопрос.";
-}
+function normalizeText(s){return String(s||'').toLowerCase().replace(/[’']/g,"'").replace(/[^a-zа-яёўқғҳ0-9+\-*/().%=\s]/gi,' ').replace(/\s+/g,' ').trim()}
+function safeLocalMath(query){const q=normalizeText(query);if(!/^(what is|calculate|solve|compute|find|hisobla|yech|qancha|посчитай|реши|вычисли)\b/i.test(q)&&!/^[0-9\s().,+\-*/%^=]+$/.test(q))return null;const expr=q.replace(/^(what is|calculate|solve|compute|find|hisobla|yech|qancha|посчитай|реши|вычисли)\s+/i,'').replace(/(\d)\s*%/g,'($1/100)');if(!/^[0-9\s().,+\-*/%^=]+$/.test(expr)||expr.length>80)return null;try{const v=Function('"use strict";return ('+expr.replace(/\^/g,'**')+')')();if(!Number.isFinite(v))return null;return LANG==='uz'?`Javob: ${v}`:LANG==='ru'?`Ответ: ${v}`:`Answer: ${v}`}catch{return null}}
+function offlineFindLesson(q){const all=[...VOCAB,...CODING_LESSONS,...STEM_LESSONS],tokens=normalizeText(q).split(/\s+/).filter(x=>x.length>2);let best=null,scoreBest=0;for(const item of all){const hay=normalizeText(JSON.stringify(item));let score=0;for(const token of tokens)if(hay.includes(token))score+=token.length>5?2:1;if(score>scoreBest){best=item;scoreBest=score}}return scoreBest>=2?best:null}
+function getAIResponse(query){const q=normalizeText(query),math=safeLocalMath(query);if(math)return math;const explain=/\b(explain|teach|why|how|tushuntir|nima uchun|qanday|объясни|почему|как)\b/i.test(q);for(const v of VOCAB){if([v.en,v.uz,v.ru].some(w=>q.includes(normalizeText(w)))){if(LANG==='en')return `📖 ${v.en}\n\nUzbek: ${v.uz}\nRussian: ${v.ru}\nLevel: ${UI.en['lvl'+v.level]}\n\nTry using "${v.en}" in a sentence.`;if(LANG==='uz')return `📖 ${v.uz}\n\nInglizcha: ${v.en}\nRuscha: ${v.ru}\nDaraja: ${UI.uz['lvl'+v.level]}\n\n"${v.en}" so‘zidan gap tuzib ko‘ring.`;return `📖 ${v.ru}\n\nАнглийский: ${v.en}\nУзбекский: ${v.uz}\nУровень: ${UI.ru['lvl'+v.level]}\n\nПопробуйте составить предложение со словом "${v.en}".`}}const lesson=offlineFindLesson(q);if(lesson){const title=lesson.title[LANG]||lesson.title.en,body=lesson.body[LANG]||lesson.body.en,formula=lesson.formula?`\n\nFormula: ${lesson.formula}`:'';return explain?`🧠 ${title}\n\n${body}${formula}\n\n💡 ${LANG==='uz'?'Ta’rifni tushuning, misol yeching va fikrni o‘zingizga qayta tushuntiring.':LANG==='ru'?'Поймите определение, решите пример и объясните идею своими словами.':'Understand the definition, solve one example, then explain it in your own words.'}`:`📚 ${title}\n\n${body}${formula}`}if(/\b(plan|schedule|reja|режим|план)\b/i.test(q))return LANG==='uz'?'🗺️ Reja: 25 daqiqa o‘rganish → 5 daqiqa tanaffus → 20 daqiqa mashq → 5 daqiqa xatolarni ko‘rish.':LANG==='ru'?'🗺️ План: 25 минут изучения → 5 минут перерыв → 20 минут практики → 5 минут разбора ошибок.':'🗺️ Plan: 25 minutes learning → 5 minutes break → 20 minutes practice → 5 minutes reviewing mistakes.';if(/\b(hello|hi|salom|привет)\b/i.test(q))return UI[LANG].greet;return LANG==='uz'?'Oflayn rejimda ham yordam bera olaman. Mavzu yoki oddiy hisob-kitob yuboring. Study Hub’da reja, taymer va kartochkalar bor.':LANG==='ru'?'Я могу помогать и офлайн. Напишите тему или пример. В Учебном центре есть план, таймер и карточки.':'I can still help offline. Name a topic or send a calculation. Study Hub has a plan, focus timer, and flashcards.'}
 
+/* ============================= STUDY HUB ============================= */
+const STUDY_KEY='nexora_study_v2';let focusTimer={seconds:1500,running:false,interval:null,total:1500},reviewState={index:0,flipped:false,queue:[]};
+function studyLoad(){try{return JSON.parse(localStorage.getItem(STUDY_KEY)||'{}')}catch{return {}}}function studySave(s){try{localStorage.setItem(STUDY_KEY,JSON.stringify(s))}catch{}}
+function initStudyHub(){const s=studyLoad();document.getElementById('goalInput').value=s.goal||'';document.getElementById('goalMinutes').value=s.goalMinutes||60;document.getElementById('studyNotes').value=s.notes||'';renderGoal();renderReviewQueue();updateFocusTimer()}
+function saveStudyGoal(){const s=studyLoad();s.goal=document.getElementById('goalInput').value.trim();s.goalMinutes=Math.max(5,Math.min(600,Number(document.getElementById('goalMinutes').value)||60));s.goalDone=Number(s.goalDone)||0;studySave(s);renderGoal();showToast('Study goal saved.')}function completeGoalStep(){const s=studyLoad();s.goalDone=Math.min(Number(s.goalMinutes)||60,(Number(s.goalDone)||0)+25);studySave(s);renderGoal()}function renderGoal(){const s=studyLoad(),t=Number(s.goalMinutes)||60,d=Math.min(t,Number(s.goalDone)||0),p=Math.round(d/t*100);document.getElementById('goalBarFill').style.width=p+'%';document.getElementById('goalProgressText').textContent=p+'%'}
+function setFocusTimer(m){resetFocusTimer();focusTimer.total=m*60;focusTimer.seconds=m*60;updateFocusTimer()}function updateFocusTimer(){const m=Math.floor(focusTimer.seconds/60).toString().padStart(2,'0'),s=(focusTimer.seconds%60).toString().padStart(2,'0');document.getElementById('focusTimer').textContent=m+':'+s;document.getElementById('timerMode').textContent=m+':'+s;document.getElementById('timerStartBtn').textContent=focusTimer.running?'Pause':'Start'}function toggleFocusTimer(){if(focusTimer.running){clearInterval(focusTimer.interval);focusTimer.running=false;document.getElementById('timerStatus').textContent='Paused.'}else{focusTimer.running=true;document.getElementById('timerStatus').textContent='Focus mode active.';focusTimer.interval=setInterval(()=>{focusTimer.seconds--;updateFocusTimer();if(focusTimer.seconds<=0){clearInterval(focusTimer.interval);focusTimer.running=false;focusTimer.seconds=focusTimer.total;updateFocusTimer();document.getElementById('timerStatus').textContent='Session complete — take a short break.';showToast('Focus session complete. Nice work.')}},1000)}updateFocusTimer()}function resetFocusTimer(){clearInterval(focusTimer.interval);focusTimer.running=false;focusTimer.seconds=focusTimer.total||1500;updateFocusTimer();document.getElementById('timerStatus').textContent='Ready to focus.'}
+function buildReviewQueue(){const s=studyLoad(),saved=Array.isArray(s.review)?s.review:[],map=new Map(saved.map(x=>[x.id,x]));return VOCAB.map(v=>map.get(v.id)||{id:v.id,box:0,next:0}).filter(x=>(x.next||0)<=Date.now()&&x.box<5).sort((a,b)=>(a.next||0)-(b.next||0)).slice(0,12)}function currentReview(){const q=reviewState.queue;return q.length?VOCAB.find(v=>v.id===q[reviewState.index%q.length]):null}function renderReviewQueue(){reviewState.queue=buildReviewQueue();reviewState.index=0;reviewState.flipped=false;document.getElementById('reviewCount').textContent=reviewState.queue.length;const v=currentReview(),f=document.getElementById('flashcardFront'),b=document.getElementById('flashcardBack');if(!v){f.textContent='No cards due right now.';b.textContent='Practice vocabulary in Language Lab.';b.classList.remove('hidden');return}f.textContent=v.en;b.textContent=v.uz+' · '+v.ru;b.classList.add('hidden');document.getElementById('flashcard').classList.remove('flipped')}function flipFlashcard(){reviewState.flipped=!reviewState.flipped;document.getElementById('flashcardBack').classList.toggle('hidden',!reviewState.flipped);document.getElementById('flashcard').classList.toggle('flipped',reviewState.flipped)}function reviewAnswer(ok){const v=currentReview();if(!v)return;const s=studyLoad(),a=Array.isArray(s.review)?s.review:[];let x=a.find(i=>i.id===v.id);if(!x){x={id:v.id,box:0,next:0};a.push(x)}x.box=ok?Math.min(5,x.box+1):0;x.next=Date.now()+(ok?[1,2,4,7,14][Math.max(0,x.box-1)]:0)*86400000;s.review=a;studySave(s);renderReviewQueue()}
+function saveStudyNotes(){const s=studyLoad();s.notes=document.getElementById('studyNotes').value;studySave(s);document.getElementById('notesSaved').textContent='Saved just now';showToast('Notes saved locally.')}function clearStudyNotes(){document.getElementById('studyNotes').value='';saveStudyNotes()}function generateStudyPlan(){const subject=document.getElementById('planSubject').value,mins=Number(document.getElementById('planTime').value),days=Number(document.getElementById('planDays').value),names={math:'Mathematics',physics:'Physics',coding:'Coding',languages:'Languages'},o=[];for(let d=1;d<=days;d++){const learn=Math.round(mins*.45),practice=Math.round(mins*.35),review=Math.max(5,mins-learn-practice);o.push(`<div class="plan-item"><span class="plan-num">D${d}</span><div><strong>${names[subject]}</strong><br><span class="sub">${learn} min learn · ${practice} min practice · ${review} min review</span></div></div>`)}document.getElementById('studyPlanOutput').innerHTML=o.join('')}
 
 /* ============================= ACCOUNT + PRICING ============================= */
-/*
-  Front-end only integration:
-  - Google login: /api/auth/google/login
-  - Current session: /api/auth/me
-  - Logout: /api/auth/logout
-  - Checkout: /api/checkout?price_id=...
-  The server must validate the session, price ID, ownership and payment state.
-*/
-const TIER_DATA = [
-  {
-    key:'free', price:0, priceId:null, featured:false,
-    limits:{messages:'20 msg/day',model:'20B AI Model',extra:'Basic history'}
-  },
-  {
-    key:'plus', price:4.99, priceId:'price_1UA93GFKLV0CUEsDrY2zR1C2', featured:false,
-    limits:{messages:'200 msg/day',model:'70B Llama Model',extra:'Fast streaming'}
-  },
-  {
-    key:'pro', price:7.99, priceId:'price_1UA94kFKLV0CUEsDbKVOHzWO', featured:true,
-    limits:{messages:'1,000 msg/day',model:'120B Flagship Model',extra:'Priority queue'}
-  },
-  {
-    key:'elite', price:14.99, priceId:'price_1UA95bFKLV0CUEsD8xzPgdQH', featured:false,
-    limits:{messages:'Unlimited msgs',model:'120B Flagship Model',extra:'Max context & history'}
-  }
-];
+const TIER_DATA=[{key:'free',price:0,priceId:null,featured:false,limits:{messages:20,model:'20B AI Model',extra:'Basic history'}},{key:'plus',price:4.99,priceId:'price_1UA93GFKLV0CUEsDrY2zR1C2',featured:false,limits:{messages:200,model:'70B Llama Model',extra:'Fast streaming'}},{key:'pro',price:7.99,priceId:'price_1UA94kFKLV0CUEsDbKVOHzWO',featured:true,limits:{messages:1000,model:'120B Flagship Model',extra:'Priority queue'}},{key:'elite',price:14.99,priceId:'price_1UA95bFKLV0CUEsD8xzPgdQH',featured:false,limits:{messages:Infinity,model:'120B Flagship Model',extra:'Max context & history'}}];
+const accountState={loaded:false,signedIn:false,user:null,tier:'free',usage:0,dailyLimit:20};
+function tierInfo(k){return TIER_DATA.find(x=>x.key===k)||TIER_DATA[0]}function escapeAttr(v){return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}function showToast(m){document.querySelector('.toast')?.remove();const e=document.createElement('div');e.className='toast';e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),4200)}function showLogin(){document.getElementById('loginOverlay')?.style.setProperty('display','flex')}function hideLogin(){document.getElementById('loginOverlay')?.style.setProperty('display','none')}
+async function startGoogleLogin(){try{const r=await fetch('/api/auth/google/status',{credentials:'include',headers:{Accept:'application/json'}}),d=await r.json().catch(()=>({}));if(!r.ok||!d.configured){showToast(d.message||UI[LANG].authNotConfigured);return}location.assign('/api/auth/google/login')}catch{showToast(UI[LANG].authUnavailable)}}
+function handleAuthCallbackMessage(){const p=new URLSearchParams(location.search),a=p.get('auth');if(a==='success'){showToast('Signed in successfully.');history.replaceState({},'',location.pathname+location.hash)}else if(a==='error'){showToast(p.get('message')||UI[LANG].authUnavailable);history.replaceState({},'',location.pathname+location.hash)}}
+async function loadAccount(){try{const r=await fetch('/api/auth/me',{headers:{Accept:'application/json'},credentials:'include'});if(!r.ok)throw 0;const d=await r.json();accountState.signedIn=!!d.authenticated;accountState.user=d.user||null;const t=d.tier||d.user?.tier||'free';accountState.tier=TIER_DATA.some(x=>x.key===t)?t:'free';accountState.usage=Number(d.usage||0);accountState.dailyLimit=d.daily_limit??tierInfo(accountState.tier).limits.messages}catch{accountState.signedIn=false;accountState.user=null;accountState.tier='free';accountState.usage=0;accountState.dailyLimit=20}accountState.loaded=true;renderAuthArea();renderPricing();renderUsageBanner()}
+function renderAuthArea(){const e=document.getElementById('authArea');if(!e)return;if(!accountState.signedIn){e.innerHTML='<button class="auth-link" onclick="showLogin()">Sign in</button>';return}const u=accountState.user||{},n=u.name||u.email||'Student',a=u.picture||u.avatar_url||'',img=a?`<img class="avatar" src="${escapeAttr(a)}" alt="">`:'';const label=accountState.tier[0].toUpperCase()+accountState.tier.slice(1);e.innerHTML=`${img}<span class="auth-name">${escapeHtml(n)}</span><span class="tier-badge tier-${escapeAttr(accountState.tier)}">${label}</span><button class="auth-link" onclick="logoutUser()">${UI[LANG].signOut}</button>`}
+async function logoutUser(){try{await fetch('/api/auth/logout',{method:'POST',credentials:'include'})}catch{}accountState.signedIn=false;accountState.user=null;accountState.tier='free';accountState.usage=0;accountState.dailyLimit=20;renderAuthArea();renderPricing();renderUsageBanner();showToast('Signed out.')}
+function renderUsageBanner(){document.getElementById('usageBanner')?.remove();const a=document.querySelector('#page-ai .ai-hero-card');if(!a||!accountState.signedIn)return;const l=Number.isFinite(accountState.dailyLimit)?accountState.dailyLimit:Infinity,p=l===Infinity?0:Math.min(100,Math.round(accountState.usage/Math.max(1,l)*100)),b=document.createElement('div');b.id='usageBanner';b.className='usage-banner';b.innerHTML=`<span>${l===Infinity?accountState.usage+' messages today · Unlimited':accountState.usage+' / '+l+' messages today'}</span><div class="bar"><div class="bar-fill" style="width:${p}%"></div></div>`;a.after(b)}
+function renderPricing(){const g=document.getElementById('pricingGrid');if(!g)return;const t=UI[LANG],names={free:{en:'Free',uz:'Bepul',ru:'Бесплатный'},plus:{en:'Plus',uz:'Plus',ru:'Plus'},pro:{en:'Pro',uz:'Pro',ru:'Pro'},elite:{en:'Elite',uz:'Elita',ru:'Elite'}};g.innerHTML=TIER_DATA.map(x=>{const name=names[x.key][LANG],amount=x.price===0?`<div class="price-amount free">${LANG==='uz'?'Bepul':LANG==='ru'?'Бесплатно':'Free'}</div>`:`<div class="price-amount">$${x.price.toFixed(2)}<span>${t.perMonth}</span></div>`,msg=x.limits.messages===Infinity?(LANG==='uz'?'Cheksiz':LANG==='ru'?'Безлимитно':'Unlimited'):`${x.limits.messages.toLocaleString()} ${LANG==='ru'?'сообщ./день':'msg/day'}`,button=accountState.tier===x.key?`<button class="btn btn-disabled" disabled>${t.currentPlan}</button>`:x.key==='free'?`<button class="btn btn-ghost" onclick="chooseFreePlan()">${t.freeBtn}</button>`:`<button class="btn btn-primary" onclick="checkout('${x.priceId}')">${t.upgradeBtn} ${name}</button>`;return `<div class="price-card ${accountState.tier===x.key?'current ':''}${x.featured?'featured':''}">${x.featured?'<div class="price-kicker">Recommended</div>':''}<div class="price-name">${name}</div>${amount}<ul>${[msg,x.limits.model,x.limits.extra].map(v=>`<li>${escapeHtml(v)}</li>`).join('')}</ul>${button}</div>`}).join('');const p=document.getElementById('portalLink');if(p)p.innerHTML=accountState.signedIn?`<button class="btn btn-sm btn-ghost" onclick="openBillingPortal()">${t.manageBilling}</button>`:`<span>${t.loginSub}</span>`}
+function chooseFreePlan(){if(accountState.signedIn)showToast('You are already using the free plan.');else showLogin()}async function checkout(id){if(!accountState.signedIn){showLogin();showToast('Sign in first so your subscription is linked to your account.');return}try{const r=await fetch('/api/checkout?price_id='+encodeURIComponent(id),{credentials:'include',headers:{Accept:'application/json'}}),d=await r.json().catch(()=>({}));if(d.url){location.href=d.url;return}throw Error(d.detail||d.error||'Checkout is unavailable.')}catch(e){showToast(e.message)}}async function openBillingPortal(){try{const r=await fetch('/api/billing/portal',{credentials:'include',headers:{Accept:'application/json'}}),d=await r.json().catch(()=>({}));if(d.url){location.href=d.url;return}throw Error(d.detail||'Billing portal is unavailable.')}catch(e){showToast(e.message)}}function getCurrentTier(){return accountState.tier||'free'}function setAccountTier(t){if(!TIER_DATA.some(x=>x.key===t))t='free';accountState.tier=t;renderAuthArea();renderPricing();renderUsageBanner()}
 
-const accountState = {
-  loaded:false,
-  signedIn:false,
-  user:null,
-  tier:'free',
-  usage:0,
-  dailyLimit:20
-};
-
-function tierInfo(key){
-  return TIER_DATA.find(x=>x.key===key) || TIER_DATA[0];
-}
-
-function escapeAttr(value){
-  return String(value ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function showToast(message){
-  document.querySelector('.toast')?.remove();
-  const el=document.createElement('div');
-  el.className='toast';
-  el.textContent=message;
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(),4200);
-}
-
-function showLogin(){
-  const overlay=document.getElementById('loginOverlay');
-  if(overlay) overlay.style.display='flex';
-}
-
-function hideLogin(){
-  const overlay=document.getElementById('loginOverlay');
-  if(overlay) overlay.style.display='none';
-}
-
-async function loadAccount(){
-  try{
-    const res=await fetch('/api/auth/me',{headers:{'Accept':'application/json'},credentials:'include'});
-    if(!res.ok) throw new Error('not signed in');
-    const data=await res.json();
-    accountState.signedIn=!!(data?.authenticated ?? data?.user);
-    accountState.user=data?.user || data || null;
-    accountState.tier=data?.tier || data?.user?.tier || 'free';
-    accountState.usage=Number(data?.usage ?? data?.messages_today ?? 0);
-    accountState.dailyLimit=Number(data?.daily_limit ?? data?.limit ?? tierInfo(accountState.tier).key==='elite' ? 0 : 20);
-  }catch{
-    accountState.signedIn=false;
-    accountState.user=null;
-    accountState.tier='free';
-    accountState.usage=0;
-    accountState.dailyLimit=20;
-  }
-  accountState.loaded=true;
-  renderAuthArea();
-  renderPricing();
-}
-
-function renderAuthArea(){
-  const el=document.getElementById('authArea');
-  if(!el) return;
-
-  if(!accountState.signedIn){
-    el.innerHTML=`<button class="auth-link" onclick="showLogin()">Sign in</button>`;
-    return;
-  }
-
-  const user=accountState.user || {};
-  const name=user.name || user.display_name || user.email || 'Student';
-  const avatar=user.avatar_url || user.picture || '';
-  const img=avatar ? `<img class="avatar" src="${escapeAttr(avatar)}" alt="">` : '';
-  el.innerHTML=`
-    ${img}
-    <span class="auth-name">${escapeHtml(name)}</span>
-    <span class="tier-badge tier-${escapeAttr(accountState.tier)}">${escapeHtml(tierInfo(accountState.tier).key)}</span>
-    <button class="auth-link" onclick="logoutUser()">Sign out</button>`;
-}
-
-async function logoutUser(){
-  try{
-    await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
-  }catch{}
-  accountState.signedIn=false;
-  accountState.user=null;
-  accountState.tier='free';
-  renderAuthArea();
-  renderPricing();
-  showToast('Signed out.');
-}
-
-function renderPricing(){
-  const grid=document.getElementById('pricingGrid');
-  if(!grid) return;
-  const t=UI[LANG];
-
-  grid.innerHTML=TIER_DATA.map(tier=>{
-    const info=t.tiers?.[tier.key] || {
-      name:tier.key[0].toUpperCase()+tier.key.slice(1),
-      desc:`${tier.limits.messages} · ${tier.limits.model} · ${tier.limits.extra}`
-    };
-    const isCurrent=accountState.tier===tier.key;
-    let button='';
-
-    if(isCurrent){
-      button=`<button class="btn btn-disabled" disabled>${t.currentPlan}</button>`;
-    }else if(tier.key==='free'){
-      button=`<button class="btn btn-ghost" onclick="chooseFreePlan()">${t.freeBtn || t.getStarted || 'Get started'}</button>`;
-    }else{
-      button=`<button class="btn btn-primary" onclick="checkout('${tier.priceId}')">${t.upgradeBtn || t.upgrade || 'Upgrade'} ${escapeHtml(info.name)}</button>`;
-    }
-
-    const amount=tier.price===0
-      ? `<div class="price-amount free">Free</div>`
-      : `<div class="price-amount">$${tier.price.toFixed(2)}<span>${t.perMonth}</span></div>`;
-
-    return `
-      <div class="price-card ${isCurrent?'current ':''}${tier.featured?'featured':''}">
-        ${tier.featured?`<div class="price-kicker">Recommended</div>`:''}
-        <div class="price-name">${escapeHtml(info.name)}</div>
-        ${amount}
-        <div class="price-desc">${escapeHtml(info.desc || '')}</div>
-        <ul>
-          ${String(info.desc || '').split(' · ').map(x=>`<li>${escapeHtml(x)}</li>`).join('')}
-        </ul>
-        ${button}
-      </div>`;
-  }).join('');
-
-  const portal=document.getElementById('portalLink');
-  if(portal){
-    portal.innerHTML=accountState.signedIn
-      ? `<button class="btn btn-sm btn-ghost" onclick="openBillingPortal()">${escapeHtml(t.manageBilling || 'Manage billing')}</button>`
-      : `<span>${escapeHtml(t.loginSub || 'Sign in to save progress and manage your subscription.')}</span>`;
-  }
-}
-
-function chooseFreePlan(){
-  if(accountState.signedIn){
-    showToast('You are already on a free account. Choose a paid plan to upgrade.');
-    return;
-  }
-  showLogin();
-}
-
-async function checkout(priceId){
-  if(!priceId) return chooseFreePlan();
-  if(!accountState.signedIn){
-    showLogin();
-    showToast('Sign in first so your subscription can be linked to your account.');
-    return;
-  }
-
-  try{
-    const res=await fetch(`/api/checkout?price_id=${encodeURIComponent(priceId)}`,{
-      method:'GET',
-      credentials:'include',
-      headers:{'Accept':'application/json'}
-    });
-
-    const contentType=res.headers.get('content-type') || '';
-    if(res.redirected){
-      window.location.href=res.url;
-      return;
-    }
-
-    if(contentType.includes('application/json')){
-      const data=await res.json();
-      if(data?.url){window.location.href=data.url;return;}
-      if(data?.checkout_url){window.location.href=data.checkout_url;return;}
-      if(data?.error) throw new Error(data.error);
-    }
-
-    if(!res.ok) throw new Error(`Checkout failed (${res.status})`);
-    window.location.href=res.url;
-  }catch(err){
-    console.error('Nexora checkout:',err);
-    showToast('Checkout is not available yet. Make sure the backend payment endpoint is running.');
-  }
-}
-
-async function openBillingPortal(){
-  try{
-    const res=await fetch('/api/billing/portal',{credentials:'include'});
-    const data=await res.json().catch(()=>({}));
-    if(data?.url){window.location.href=data.url;return;}
-    if(res.ok) showToast('Billing portal opened by the server.');
-    else throw new Error('billing portal unavailable');
-  }catch{
-    showToast('Billing management is not configured on this server yet.');
-  }
-}
-
-/* Keep the pasted pricing schema compatible with the richer account UI. */
-function getCurrentTier(){ return accountState.tier || 'free'; }
-
-/* Update account state when the backend tells the page the user's tier changed. */
-function setAccountTier(tier){
-  if(!TIER_DATA.some(x=>x.key===tier)) tier='free';
-  accountState.tier=tier;
-  renderAuthArea();
-  renderPricing();
-  renderProgress();
-}
-
-/* ============================= END ACCOUNT + PRICING ============================= */
 
 
 /* ============================= INIT ============================= */
 document.getElementById('langSelect').value = LANG;
 applyI18n();
+initStudyHub();
+handleAuthCallbackMessage();
 renderAuthArea();
 renderPricing();
 loadAccount();
