@@ -61,7 +61,7 @@ TIERS: Dict[str, TierConfig] = {
         streaming=True,
         priority_queue=False,
         persistent_history=True,
-        stripe_price_id=os.getenv("STRIPE_PRICE_PLUS") or None,
+        stripe_price_id=os.getenv("price_1UA93GFKLV0CUEsDrY2zR1C2") or None,
     ),
     "pro": TierConfig(
         key="pro",
@@ -75,7 +75,7 @@ TIERS: Dict[str, TierConfig] = {
         streaming=True,
         priority_queue=True,
         persistent_history=True,
-        stripe_price_id=os.getenv("STRIPE_PRICE_PRO") or None,
+        stripe_price_id=os.getenv("price_1UA94kFKLV0CUEsDbKVOHzWO") or None,
     ),
     "elite": TierConfig(
         key="elite",
@@ -89,7 +89,7 @@ TIERS: Dict[str, TierConfig] = {
         streaming=True,
         priority_queue=True,
         persistent_history=True,
-        stripe_price_id=os.getenv("STRIPE_PRICE_ELITE") or None,
+        stripe_price_id=os.getenv("price_1UA95bFKLV0CUEsD8xzPgdQH") or None,
     ),
 }
 
