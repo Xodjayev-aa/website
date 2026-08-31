@@ -35,6 +35,63 @@ MODEL_FREE = os.getenv("GROQ_MODEL_FREE", "llama-3.1-8b-instant")
 MODEL_STANDARD = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 MODEL_ELITE = os.getenv("GROQ_MODEL_ELITE", "llama-3.3-70b-versatile")
 
+# tiers.py
+
+TIERS: Dict[str, TierConfig] = {
+    "free": TierConfig(
+        key="free",
+        display_name="Free Plan",
+        daily_message_limit=15,
+        burst_limit_per_minute=5,
+        model="llama-3.1-8b-instant",  # <--- Fast, cheap 8B model for free users
+        max_tokens=1024,
+        history_turns=4,
+        streaming=False,
+        priority_queue=False,
+        persistent_history=False,
+        stripe_price_id=None,
+    ),
+    "plus": TierConfig(
+        key="plus",
+        display_name="Plus Plan",
+        daily_message_limit=100,
+        burst_limit_per_minute=15,
+        model="llama-3.3-70b-versatile", # <--- Powerful 70B model for paying users
+        max_tokens=2048,
+        history_turns=10,
+        streaming=True,
+        priority_queue=False,
+        persistent_history=True,
+        stripe_price_id=PLUS_PRICE_ID,
+    ),
+    "pro": TierConfig(
+        key="pro",
+        display_name="Pro Plan",
+        daily_message_limit=500,
+        burst_limit_per_minute=30,
+        model="llama-3.3-70b-versatile",
+        max_tokens=4096,
+        history_turns=20,
+        streaming=True,
+        priority_queue=True,
+        persistent_history=True,
+        stripe_price_id=PRO_PRICE_ID,
+    ),
+    "elite": TierConfig(
+        key="elite",
+        display_name="Elite Plan",
+        daily_message_limit=-1,
+        burst_limit_per_minute=60,
+        model="llama-3.3-70b-versatile",
+        max_tokens=8192,
+        history_turns=30,
+        streaming=True,
+        priority_queue=True,
+        persistent_history=True,
+        stripe_price_id=ELITE_PRICE_ID,
+    ),
+}
+
 TIERS: Dict[str, TierConfig] = {
     "free": TierConfig(
         key="free",
