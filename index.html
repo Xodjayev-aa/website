@@ -55,7 +55,7 @@
   header{
     position:sticky; top:0; z-index:200;
     display:flex; align-items:center; justify-content:space-between; gap:1rem;
-    padding:.9rem 1.6rem; background:rgba(var(--void), .86); backdrop-filter:blur(14px);
+    padding:.9rem 1.6rem; background:color-mix(in srgb, var(--void) 86%, transparent); backdrop-filter:blur(14px);
     border-bottom:1px solid var(--line); flex-wrap:wrap;
   }
   [data-theme="light"] header { background:rgba(255,255,255,.86); }
@@ -267,6 +267,21 @@
   .upgrade-modal{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:rgba(10,14,23,.72)}
   [data-theme="light"] .upgrade-modal{background:rgba(241,245,249,.82)}
   .upgrade-modal-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.8rem;max-width:380px;text-align:center}
+
+  /* ===== Combined build enhancements ===== */
+  .auth-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem;color:var(--ink-dim)}
+  .auth-link{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:.42rem .7rem;border-radius:8px;cursor:pointer;font-size:.76rem;font-weight:700}
+  .auth-link:hover{border-color:var(--teal);color:var(--teal)}
+  .price-card.featured{border-color:var(--violet);box-shadow:0 0 0 1px rgba(167,139,250,.35),0 12px 35px rgba(0,0,0,.12)}
+  .price-card .price-desc{color:var(--ink-dim);font-size:.84rem;min-height:2.7em}
+  .price-card .price-kicker{font-family:var(--font-mono);font-size:.68rem;color:var(--violet);text-transform:uppercase;letter-spacing:1px}
+  .price-card .price-amount.free{color:var(--teal)}
+  .pricing-note{margin-top:1rem;padding:.8rem 1rem;border:1px solid var(--line);border-radius:10px;color:var(--ink-dim);font-size:.8rem}
+  .toast{position:fixed;right:1rem;bottom:1rem;z-index:900;max-width:360px;padding:.85rem 1rem;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:10px;box-shadow:0 15px 40px rgba(0,0,0,.25);font-size:.85rem;animation:rise .25s ease}
+  .hidden{display:none!important}
+  @media(max-width:1050px){header{padding:.8rem 1rem}nav{order:3;width:100%;justify-content:center}.headerRight{margin-left:auto}}
+  @media(max-width:650px){main{padding:1.2rem 1rem 4rem}.hero{gap:1rem}.orbit-wrap{max-width:290px}.chat-box{height:360px}.msg{max-width:90%}.headerRight{width:100%;justify-content:flex-end}.auth-name{display:none}}
+
 </style>
 </head>
 <body>
@@ -1113,9 +1128,248 @@ function getAIResponse(query){
   return "Я могу помочь с языками, веб-разработкой, математикой и физикой. Задайте полный вопрос.";
 }
 
+
+/* ============================= ACCOUNT + PRICING ============================= */
+/*
+  Front-end only integration:
+  - Google login: /api/auth/google/login
+  - Current session: /api/auth/me
+  - Logout: /api/auth/logout
+  - Checkout: /api/checkout?price_id=...
+  The server must validate the session, price ID, ownership and payment state.
+*/
+const TIER_DATA = [
+  {
+    key:'free', price:0, priceId:null, featured:false,
+    limits:{messages:'20 msg/day',model:'20B AI Model',extra:'Basic history'}
+  },
+  {
+    key:'plus', price:4.99, priceId:'price_1UA93GFKLV0CUEsDrY2zR1C2', featured:false,
+    limits:{messages:'200 msg/day',model:'70B Llama Model',extra:'Fast streaming'}
+  },
+  {
+    key:'pro', price:7.99, priceId:'price_1UA94kFKLV0CUEsDbKVOHzWO', featured:true,
+    limits:{messages:'1,000 msg/day',model:'120B Flagship Model',extra:'Priority queue'}
+  },
+  {
+    key:'elite', price:14.99, priceId:'price_1UA95bFKLV0CUEsD8xzPgdQH', featured:false,
+    limits:{messages:'Unlimited msgs',model:'120B Flagship Model',extra:'Max context & history'}
+  }
+];
+
+const accountState = {
+  loaded:false,
+  signedIn:false,
+  user:null,
+  tier:'free',
+  usage:0,
+  dailyLimit:20
+};
+
+function tierInfo(key){
+  return TIER_DATA.find(x=>x.key===key) || TIER_DATA[0];
+}
+
+function escapeAttr(value){
+  return String(value ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showToast(message){
+  document.querySelector('.toast')?.remove();
+  const el=document.createElement('div');
+  el.className='toast';
+  el.textContent=message;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),4200);
+}
+
+function showLogin(){
+  const overlay=document.getElementById('loginOverlay');
+  if(overlay) overlay.style.display='flex';
+}
+
+function hideLogin(){
+  const overlay=document.getElementById('loginOverlay');
+  if(overlay) overlay.style.display='none';
+}
+
+async function loadAccount(){
+  try{
+    const res=await fetch('/api/auth/me',{headers:{'Accept':'application/json'},credentials:'include'});
+    if(!res.ok) throw new Error('not signed in');
+    const data=await res.json();
+    accountState.signedIn=!!(data?.authenticated ?? data?.user);
+    accountState.user=data?.user || data || null;
+    accountState.tier=data?.tier || data?.user?.tier || 'free';
+    accountState.usage=Number(data?.usage ?? data?.messages_today ?? 0);
+    accountState.dailyLimit=Number(data?.daily_limit ?? data?.limit ?? tierInfo(accountState.tier).key==='elite' ? 0 : 20);
+  }catch{
+    accountState.signedIn=false;
+    accountState.user=null;
+    accountState.tier='free';
+    accountState.usage=0;
+    accountState.dailyLimit=20;
+  }
+  accountState.loaded=true;
+  renderAuthArea();
+  renderPricing();
+}
+
+function renderAuthArea(){
+  const el=document.getElementById('authArea');
+  if(!el) return;
+
+  if(!accountState.signedIn){
+    el.innerHTML=`<button class="auth-link" onclick="showLogin()">Sign in</button>`;
+    return;
+  }
+
+  const user=accountState.user || {};
+  const name=user.name || user.display_name || user.email || 'Student';
+  const avatar=user.avatar_url || user.picture || '';
+  const img=avatar ? `<img class="avatar" src="${escapeAttr(avatar)}" alt="">` : '';
+  el.innerHTML=`
+    ${img}
+    <span class="auth-name">${escapeHtml(name)}</span>
+    <span class="tier-badge tier-${escapeAttr(accountState.tier)}">${escapeHtml(tierInfo(accountState.tier).key)}</span>
+    <button class="auth-link" onclick="logoutUser()">Sign out</button>`;
+}
+
+async function logoutUser(){
+  try{
+    await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
+  }catch{}
+  accountState.signedIn=false;
+  accountState.user=null;
+  accountState.tier='free';
+  renderAuthArea();
+  renderPricing();
+  showToast('Signed out.');
+}
+
+function renderPricing(){
+  const grid=document.getElementById('pricingGrid');
+  if(!grid) return;
+  const t=UI[LANG];
+
+  grid.innerHTML=TIER_DATA.map(tier=>{
+    const info=t.tiers?.[tier.key] || {
+      name:tier.key[0].toUpperCase()+tier.key.slice(1),
+      desc:`${tier.limits.messages} · ${tier.limits.model} · ${tier.limits.extra}`
+    };
+    const isCurrent=accountState.tier===tier.key;
+    let button='';
+
+    if(isCurrent){
+      button=`<button class="btn btn-disabled" disabled>${t.currentPlan}</button>`;
+    }else if(tier.key==='free'){
+      button=`<button class="btn btn-ghost" onclick="chooseFreePlan()">${t.freeBtn || t.getStarted || 'Get started'}</button>`;
+    }else{
+      button=`<button class="btn btn-primary" onclick="checkout('${tier.priceId}')">${t.upgradeBtn || t.upgrade || 'Upgrade'} ${escapeHtml(info.name)}</button>`;
+    }
+
+    const amount=tier.price===0
+      ? `<div class="price-amount free">Free</div>`
+      : `<div class="price-amount">$${tier.price.toFixed(2)}<span>${t.perMonth}</span></div>`;
+
+    return `
+      <div class="price-card ${isCurrent?'current ':''}${tier.featured?'featured':''}">
+        ${tier.featured?`<div class="price-kicker">Recommended</div>`:''}
+        <div class="price-name">${escapeHtml(info.name)}</div>
+        ${amount}
+        <div class="price-desc">${escapeHtml(info.desc || '')}</div>
+        <ul>
+          ${String(info.desc || '').split(' · ').map(x=>`<li>${escapeHtml(x)}</li>`).join('')}
+        </ul>
+        ${button}
+      </div>`;
+  }).join('');
+
+  const portal=document.getElementById('portalLink');
+  if(portal){
+    portal.innerHTML=accountState.signedIn
+      ? `<button class="btn btn-sm btn-ghost" onclick="openBillingPortal()">${escapeHtml(t.manageBilling || 'Manage billing')}</button>`
+      : `<span>${escapeHtml(t.loginSub || 'Sign in to save progress and manage your subscription.')}</span>`;
+  }
+}
+
+function chooseFreePlan(){
+  if(accountState.signedIn){
+    showToast('You are already on a free account. Choose a paid plan to upgrade.');
+    return;
+  }
+  showLogin();
+}
+
+async function checkout(priceId){
+  if(!priceId) return chooseFreePlan();
+  if(!accountState.signedIn){
+    showLogin();
+    showToast('Sign in first so your subscription can be linked to your account.');
+    return;
+  }
+
+  try{
+    const res=await fetch(`/api/checkout?price_id=${encodeURIComponent(priceId)}`,{
+      method:'GET',
+      credentials:'include',
+      headers:{'Accept':'application/json'}
+    });
+
+    const contentType=res.headers.get('content-type') || '';
+    if(res.redirected){
+      window.location.href=res.url;
+      return;
+    }
+
+    if(contentType.includes('application/json')){
+      const data=await res.json();
+      if(data?.url){window.location.href=data.url;return;}
+      if(data?.checkout_url){window.location.href=data.checkout_url;return;}
+      if(data?.error) throw new Error(data.error);
+    }
+
+    if(!res.ok) throw new Error(`Checkout failed (${res.status})`);
+    window.location.href=res.url;
+  }catch(err){
+    console.error('Nexora checkout:',err);
+    showToast('Checkout is not available yet. Make sure the backend payment endpoint is running.');
+  }
+}
+
+async function openBillingPortal(){
+  try{
+    const res=await fetch('/api/billing/portal',{credentials:'include'});
+    const data=await res.json().catch(()=>({}));
+    if(data?.url){window.location.href=data.url;return;}
+    if(res.ok) showToast('Billing portal opened by the server.');
+    else throw new Error('billing portal unavailable');
+  }catch{
+    showToast('Billing management is not configured on this server yet.');
+  }
+}
+
+/* Keep the pasted pricing schema compatible with the richer account UI. */
+function getCurrentTier(){ return accountState.tier || 'free'; }
+
+/* Update account state when the backend tells the page the user's tier changed. */
+function setAccountTier(tier){
+  if(!TIER_DATA.some(x=>x.key===tier)) tier='free';
+  accountState.tier=tier;
+  renderAuthArea();
+  renderPricing();
+  renderProgress();
+}
+
+/* ============================= END ACCOUNT + PRICING ============================= */
+
+
 /* ============================= INIT ============================= */
 document.getElementById('langSelect').value = LANG;
 applyI18n();
+renderAuthArea();
+renderPricing();
+loadAccount();
 </script>
 </body>
 </html>
