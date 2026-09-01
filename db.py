@@ -4,9 +4,9 @@ Postgres — e.g. postgresql+asyncpg://... — with zero code changes when you
 outgrow SQLite).
 
 Two tables:
-- users            one row per Google account, holds the current tier
-- usage_counters   one row per (user, day), used to enforce daily quotas
-                    and to survive server restarts (unlike an in-memory count)
+- users           one row per Google account, holds the current tier
+- usage_counters  one row per (user, day), used to enforce daily quotas
+                  and to survive server restarts (unlike an in-memory count)
 """
 
 from __future__ import annotations
@@ -19,7 +19,12 @@ from sqlalchemy import Date, ForeignKey, Integer, String, UniqueConstraint, sele
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
+# Fetch from environment variable (Vercel/Production), default to SQLite (Local)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./nexora.db")
+
+# Fix standard Postgres connection strings for asyncpg if needed
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
