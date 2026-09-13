@@ -1,18 +1,33 @@
-from datetime import date
+from datetime import date, datetime
+
 from sqlalchemy.orm import declarative_base, Mapped, mapped_column
-from sqlalchemy.types import Integer, String, Date
+from sqlalchemy.types import Integer, String, Date, DateTime
 
 Base = declarative_base()
 
+
 class User(Base):
     __tablename__ = "users"
-    
-    # Matches the user ID from your auth system (e.g., Clerk, Supabase, or custom auth)
+
+    # Internal primary key (UUID string). Distinct from the Google subject id
+    # so we're never locked into one auth provider's id format.
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    
-    # Defaults to the "free" tier defined in tiers.py
+
+    # Google OAuth identity
+    google_sub: Mapped[str] = mapped_column(String, unique=True, index=True)
+    email: Mapped[str] = mapped_column(String, unique=True, index=True)
+    name: Mapped[str] = mapped_column(String, default="")
+    picture: Mapped[str] = mapped_column(String, default="")
+
+    # Defaults to the "free" tier defined in subscription.py
     tier: Mapped[str] = mapped_column(String, default="free")
-    
-    # Daily tracking 
+
+    # Stripe
+    stripe_customer_id: Mapped[str] = mapped_column(String, nullable=True, index=True)
+    stripe_subscription_id: Mapped[str] = mapped_column(String, nullable=True)
+
+    # Daily usage tracking
     last_message_date: Mapped[date] = mapped_column(Date, default=date.today)
     daily_message_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
