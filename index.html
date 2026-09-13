@@ -250,6 +250,10 @@
   .login-card p{color:var(--ink-dim);font-size:.9rem;margin-bottom:1.2rem}
   .google-btn{display:inline-flex;align-items:center;gap:.6rem;background:#fff;color:#1f1f1f;border:1px solid var(--line);border-radius:10px;padding:.65rem 1.2rem;font-weight:700;font-size:.9rem;cursor:pointer;text-decoration:none}
   .google-btn:hover{filter:brightness(.97)}
+  .google-btn:disabled{opacity:.65;cursor:wait}
+  .auth-hint{margin-top:.8rem;font-size:.72rem;color:var(--ink-dim)}
+  .auth-error{margin-top:.8rem;padding:.65rem .75rem;border-radius:8px;border:1px solid rgba(255,107,139,.35);background:rgba(255,107,139,.08);color:var(--rose);font-size:.78rem;display:none}
+  .auth-error.show{display:block}
   .usage-banner{display:flex;align-items:center;justify-content:space-between;gap:1rem;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:.7rem 1rem;font-size:.82rem;color:var(--ink-dim);margin-top:.9rem;flex-wrap:wrap}
   .usage-banner .bar{flex:1;min-width:120px;height:6px;border-radius:999px;background:var(--line);overflow:hidden}
   .usage-banner .bar-fill{height:100%;background:var(--teal);transition:width .3s ease}
@@ -318,10 +322,12 @@
     <button class="modal-close" onclick="hideLogin()" aria-label="Close">×</button>
     <h3 data-i18n="loginTitle">Sign in to start learning</h3>
     <p data-i18n="loginSub">Create a free account to save your progress and chat with the Assistant.</p>
-    <button class="google-btn" onclick="startGoogleLogin()">
+    <button id="googleLoginBtn" class="google-btn" onclick="startGoogleLogin()">
       <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.66 9c0-.59.1-1.16.29-1.7V4.97H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.03l2.97-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.97l2.97 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
       <span data-i18n="loginBtn">Sign in with Google</span>
     </button>
+    <div class="auth-hint">Google handles the password and account security. Nexora only receives the sign-in result.</div>
+    <div id="authError" class="auth-error" role="alert"></div>
   </div>
 </div>
 
@@ -1184,9 +1190,65 @@ function saveStudyNotes(){const s=studyLoad();s.notes=document.getElementById('s
 const TIER_DATA=[{key:'free',price:0,priceId:null,featured:false,limits:{messages:20,model:'20B AI Model',extra:'Basic history'}},{key:'plus',price:4.99,priceId:'price_1UA93GFKLV0CUEsDrY2zR1C2',featured:false,limits:{messages:200,model:'70B Llama Model',extra:'Fast streaming'}},{key:'pro',price:7.99,priceId:'price_1UA94kFKLV0CUEsDbKVOHzWO',featured:true,limits:{messages:1000,model:'120B Flagship Model',extra:'Priority queue'}},{key:'elite',price:14.99,priceId:'price_1UA95bFKLV0CUEsD8xzPgdQH',featured:false,limits:{messages:Infinity,model:'120B Flagship Model',extra:'Max context & history'}}];
 const accountState={loaded:false,signedIn:false,user:null,tier:'free',usage:0,dailyLimit:20};
 function tierInfo(k){return TIER_DATA.find(x=>x.key===k)||TIER_DATA[0]}function escapeAttr(v){return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}function showToast(m){document.querySelector('.toast')?.remove();const e=document.createElement('div');e.className='toast';e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),4200)}function showLogin(){document.getElementById('loginOverlay')?.style.setProperty('display','flex')}function hideLogin(){document.getElementById('loginOverlay')?.style.setProperty('display','none')}
-async function startGoogleLogin(){try{const r=await fetch('/api/auth/google/status',{credentials:'include',headers:{Accept:'application/json'}}),d=await r.json().catch(()=>({}));if(!r.ok||!d.configured){showToast(d.message||UI[LANG].authNotConfigured);return}location.assign('/api/auth/google/login')}catch{showToast(UI[LANG].authUnavailable)}}
-function handleAuthCallbackMessage(){const p=new URLSearchParams(location.search),a=p.get('auth');if(a==='success'){showToast('Signed in successfully.');history.replaceState({},'',location.pathname+location.hash)}else if(a==='error'){showToast(p.get('message')||UI[LANG].authUnavailable);history.replaceState({},'',location.pathname+location.hash)}}
-async function loadAccount(){try{const r=await fetch('/api/auth/me',{headers:{Accept:'application/json'},credentials:'include'});if(!r.ok)throw 0;const d=await r.json();accountState.signedIn=!!d.authenticated;accountState.user=d.user||null;const t=d.tier||d.user?.tier||'free';accountState.tier=TIER_DATA.some(x=>x.key===t)?t:'free';accountState.usage=Number(d.usage||0);accountState.dailyLimit=d.daily_limit??tierInfo(accountState.tier).limits.messages}catch{accountState.signedIn=false;accountState.user=null;accountState.tier='free';accountState.usage=0;accountState.dailyLimit=20}accountState.loaded=true;renderAuthArea();renderPricing();renderUsageBanner()}
+async function startGoogleLogin(){
+  const btn=document.getElementById('googleLoginBtn');
+  const err=document.getElementById('authError');
+  if(btn){btn.disabled=true;btn.querySelector('span').textContent='Connecting to Google…';}
+  if(err){err.textContent='';err.classList.remove('show');}
+  try{
+    if(location.protocol==='file:'){
+      throw new Error('Nexora must be opened through your web server, not directly as a file. Start server.py and open the server address.');
+    }
+    // Do not call a separate /status endpoint here. Older/newer server builds may
+    // not expose that optional route; the actual OAuth route is the source of truth.
+    location.assign('/api/auth/google/login');
+  }catch(e){
+    const msg=e?.message||UI[LANG].authUnavailable;
+    if(err){err.textContent=msg;err.classList.add('show');}
+    showToast(msg);
+    if(btn){btn.disabled=false;btn.querySelector('span').textContent=UI[LANG].loginBtn;}
+  }
+}
+function handleAuthCallbackMessage(){
+  const p=new URLSearchParams(location.search),a=p.get('auth');
+  if(a==='success'){
+    showToast('Signed in successfully.');
+    history.replaceState({},'',location.pathname+location.hash);
+    // Explicitly refresh the account after OAuth instead of relying on a stale UI state.
+    setTimeout(loadAccount,0);
+  }else if(a==='error'){
+    let msg=p.get('message')||UI[LANG].authUnavailable;
+    try{msg=decodeURIComponent(msg);}catch{}
+    showToast(msg);
+    const err=document.getElementById('authError');
+    if(err){err.textContent=msg;err.classList.add('show');}
+    history.replaceState({},'',location.pathname+location.hash);
+  }
+}
+async function loadAccount(){
+  try{
+    const r=await fetch('/api/auth/me',{headers:{Accept:'application/json'},credentials:'include',cache:'no-store'});
+    const d=await r.json().catch(()=>({}));
+    // 401/403 simply means there is no active session. Other failures should be visible.
+    if(r.status===401||r.status===403){
+      accountState.signedIn=false;accountState.user=null;accountState.tier='free';accountState.usage=0;accountState.dailyLimit=20;
+    }else if(!r.ok){
+      throw new Error(d.detail||d.error||`Account request failed (HTTP ${r.status})`);
+    }else{
+      accountState.signedIn=!!d.authenticated;
+      accountState.user=d.user||null;
+      const t=d.tier||d.user?.tier||'free';
+      accountState.tier=TIER_DATA.some(x=>x.key===t)?t:'free';
+      accountState.usage=Number(d.usage||0);
+      accountState.dailyLimit=d.daily_limit??tierInfo(accountState.tier).limits.messages;
+    }
+  }catch(e){
+    accountState.signedIn=false;accountState.user=null;accountState.tier='free';accountState.usage=0;accountState.dailyLimit=20;
+    if(location.protocol!=='file:') showToast('Could not reach the account server. Your local lessons still work.');
+    console.error('Nexora account:',e);
+  }
+  accountState.loaded=true;renderAuthArea();renderPricing();renderUsageBanner();
+}
 function renderAuthArea(){const e=document.getElementById('authArea');if(!e)return;if(!accountState.signedIn){e.innerHTML='<button class="auth-link" onclick="showLogin()">Sign in</button>';return}const u=accountState.user||{},n=u.name||u.email||'Student',a=u.picture||u.avatar_url||'',img=a?`<img class="avatar" src="${escapeAttr(a)}" alt="">`:'';const label=accountState.tier[0].toUpperCase()+accountState.tier.slice(1);e.innerHTML=`${img}<span class="auth-name">${escapeHtml(n)}</span><span class="tier-badge tier-${escapeAttr(accountState.tier)}">${label}</span><button class="auth-link" onclick="logoutUser()">${UI[LANG].signOut}</button>`}
 async function logoutUser(){try{await fetch('/api/auth/logout',{method:'POST',credentials:'include'})}catch{}accountState.signedIn=false;accountState.user=null;accountState.tier='free';accountState.usage=0;accountState.dailyLimit=20;renderAuthArea();renderPricing();renderUsageBanner();showToast('Signed out.')}
 function renderUsageBanner(){document.getElementById('usageBanner')?.remove();const a=document.querySelector('#page-ai .ai-hero-card');if(!a||!accountState.signedIn)return;const l=Number.isFinite(accountState.dailyLimit)?accountState.dailyLimit:Infinity,p=l===Infinity?0:Math.min(100,Math.round(accountState.usage/Math.max(1,l)*100)),b=document.createElement('div');b.id='usageBanner';b.className='usage-banner';b.innerHTML=`<span>${l===Infinity?accountState.usage+' messages today · Unlimited':accountState.usage+' / '+l+' messages today'}</span><div class="bar"><div class="bar-fill" style="width:${p}%"></div></div>`;a.after(b)}
@@ -1194,6 +1256,10 @@ function renderPricing(){const g=document.getElementById('pricingGrid');if(!g)re
 function chooseFreePlan(){if(accountState.signedIn)showToast('You are already using the free plan.');else showLogin()}async function checkout(id){if(!accountState.signedIn){showLogin();showToast('Sign in first so your subscription is linked to your account.');return}try{const r=await fetch('/api/checkout?price_id='+encodeURIComponent(id),{credentials:'include',headers:{Accept:'application/json'}}),d=await r.json().catch(()=>({}));if(d.url){location.href=d.url;return}throw Error(d.detail||d.error||'Checkout is unavailable.')}catch(e){showToast(e.message)}}async function openBillingPortal(){try{const r=await fetch('/api/billing/portal',{credentials:'include',headers:{Accept:'application/json'}}),d=await r.json().catch(()=>({}));if(d.url){location.href=d.url;return}throw Error(d.detail||'Billing portal is unavailable.')}catch(e){showToast(e.message)}}function getCurrentTier(){return accountState.tier||'free'}function setAccountTier(t){if(!TIER_DATA.some(x=>x.key===t))t='free';accountState.tier=t;renderAuthArea();renderPricing();renderUsageBanner()}
 
 
+
+/* Auth UX: close with Escape or by clicking the backdrop. */
+document.getElementById('loginOverlay')?.addEventListener('click',e=>{if(e.target.id==='loginOverlay')hideLogin();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){hideLogin();document.getElementById('upgradeModal')?.style.setProperty('display','none');}});
 
 /* ============================= INIT ============================= */
 document.getElementById('langSelect').value = LANG;
