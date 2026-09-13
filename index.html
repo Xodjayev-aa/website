@@ -1,1274 +1,320 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexora — Learn. Build. Think.</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --void:#0a0e17; --panel:#111827; --panel-2:#161f33; --line:#233052;
-    --ink:#eef2ff; --ink-dim:#8b96b8;
-    --teal:#3ee6c8; --violet:#a78bfa; --amber:#f5b942; --rose:#ff6b8b;
-    --ring1:#3ee6c8; --ring2:#a78bfa; --ring3:#f5b942;
-    --radius:14px;
-    --font-display:'Space Grotesk',sans-serif;
-    --font-body:'Inter',sans-serif;
-    --font-mono:'JetBrains Mono',monospace;
-  }
-  
-  /* LIGHT THEME OVERRIDES */
-  [data-theme="light"] {
-    --void: #f8fafc; --panel: #ffffff; --panel-2: #f1f5f9; --line: #e2e8f0;
-    --ink: #0f172a; --ink-dim: #64748b;
-    --teal: #0d9488; --violet: #7c3aed; --amber: #d97706; --rose: #e11d48;
-    --ring1: #0d9488; --ring2: #7c3aed; --ring3: #d97706;
-  }
-
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{
-    background:var(--void); color:var(--ink); font-family:var(--font-body);
-    min-height:100vh; line-height:1.55;
-    background-image:
-      radial-gradient(circle at 8% 12%, rgba(167,139,250,.08), transparent 42%),
-      radial-gradient(circle at 92% 78%, rgba(62,230,200,.08), transparent 42%);
-    transition: background 0.3s ease, color 0.3s ease;
-  }
-  @media (prefers-reduced-motion: reduce){ *{animation-duration:.01ms !important; transition-duration:.01ms !important;} }
-  a{color:inherit}
-  button{font-family:inherit}
-  ::selection{background:var(--teal); color:#fff}
-
-
-  /* Nexora AI surface */
-  .ai-hero-card{display:flex;justify-content:space-between;gap:1.2rem;align-items:center;margin:1.2rem 0 1rem;padding:1rem 1.1rem;background:linear-gradient(135deg,rgba(62,230,200,.08),rgba(167,139,250,.08));border:1px solid var(--line);border-radius:16px}
-  .ai-hero-main{display:flex;align-items:center;gap:.85rem;min-width:0}
-  .ai-hero-main strong{font-family:var(--font-display);font-size:1.05rem}.ai-hero-main p{color:var(--ink-dim);font-size:.84rem;margin-top:.12rem}
-  .ai-orb{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--teal);box-shadow:0 0 24px rgba(62,230,200,.15);flex:0 0 auto}
-  .ai-orb span{width:15px;height:15px;border-radius:50%;background:var(--teal);box-shadow:0 0 18px var(--teal)}
-  .ai-capabilities{display:flex;gap:.45rem;flex-wrap:wrap;justify-content:flex-end}.ai-capabilities span{font-size:.72rem;padding:.35rem .55rem;border:1px solid var(--line);border-radius:999px;color:var(--ink-dim);white-space:nowrap}
-  @media(max-width:760px){.ai-hero-card{align-items:flex-start;flex-direction:column}.ai-capabilities{justify-content:flex-start}}
-
-  /* Header */
-  header{
-    position:sticky; top:0; z-index:200;
-    display:flex; align-items:center; justify-content:space-between; gap:1rem;
-    padding:.9rem 1.6rem; background:color-mix(in srgb, var(--void) 86%, transparent); backdrop-filter:blur(14px);
-    border-bottom:1px solid var(--line); flex-wrap:wrap;
-  }
-  [data-theme="light"] header { background:rgba(255,255,255,.86); }
-  
-  .brand{display:flex; align-items:center; gap:.6rem; font-family:var(--font-display); font-weight:700; font-size:1.25rem; letter-spacing:.3px}
-  .brand .mark{width:30px;height:30px;flex:0 0 auto}
-  nav{display:flex; gap:.35rem; flex-wrap:wrap}
-  .nav-btn{
-    background:transparent; border:1px solid transparent; color:var(--ink-dim);
-    padding:.55rem 1rem; border-radius:999px; cursor:pointer; font-weight:600; font-size:.92rem;
-    transition:.2s ease;
-  }
-  .nav-btn:hover{color:var(--ink); border-color:var(--line)}
-  .nav-btn.active{color:var(--void); background:var(--teal); border-color:var(--teal)}
-  .lang-select{
-    background:var(--panel); color:var(--teal); border:1px solid var(--line);
-    padding:.5rem .8rem; border-radius:8px; outline:none; cursor:pointer; font-weight:600; font-size:.85rem;
-  }
-  .theme-btn {
-    background:var(--panel); border:1px solid var(--line); color:var(--ink);
-    padding:.5rem; border-radius:8px; cursor:pointer; font-size:1rem; line-height:1;
-  }
-  .headerRight{display:flex; align-items:center; gap:.6rem}
-
-  main{max-width:1180px; margin:0 auto; padding:2rem 1.6rem 5rem}
-  .page{display:none; animation:rise .35s ease forwards}
-  .page.active{display:block}
-  @keyframes rise{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)}}
-
-  h1{font-family:var(--font-display); font-size:clamp(1.9rem,4vw,3rem); line-height:1.08; letter-spacing:-.5px}
-  h2{font-family:var(--font-display); font-size:1.7rem; margin-bottom:.3rem}
-  h3{font-family:var(--font-display); font-size:1.1rem}
-  .sub{color:var(--ink-dim); max-width:60ch}
-  .eyebrow{
-    display:inline-flex; align-items:center; gap:.4rem; font-family:var(--font-mono); font-size:.72rem;
-    letter-spacing:1.5px; text-transform:uppercase; color:var(--teal); margin-bottom:.7rem;
-  }
-  .eyebrow::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--teal); box-shadow:0 0 10px var(--teal)}
-
-  /* HERO */
-  .hero{display:grid; grid-template-columns:1.1fr .9fr; gap:2.4rem; align-items:center; padding:1.2rem 0 2.4rem}
-  @media (max-width:860px){.hero{grid-template-columns:1fr}}
-  .orbit-wrap{position:relative; aspect-ratio:1/1; max-width:380px; margin:0 auto}
-  .orbit-ring{position:absolute; inset:0; border:1px dashed var(--line); border-radius:50%; animation:spin 40s linear infinite}
-  .orbit-ring.r2{inset:14%; animation-duration:28s; animation-direction:reverse; border-color:rgba(167,139,250,.35)}
-  .orbit-ring.r3{inset:30%; animation-duration:18s; border-color:rgba(62,230,200,.4)}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .orbit-core{
-    position:absolute; inset:38%; border-radius:50%;
-    background:var(--panel-2);
-    border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
-    font-family:var(--font-mono); font-size:.7rem; color:var(--teal); text-align:center; padding:.4rem;
-    box-shadow:0 0 40px rgba(62,230,200,.10) inset;
-  }
-  .node{position:absolute; width:11px; height:11px; border-radius:50%; box-shadow:0 0 12px currentColor}
-  .n1{top:-5px; left:50%; background:var(--teal); color:var(--teal)}
-  .n2{top:14%; right:-5px; background:var(--violet); color:var(--violet)}
-  .n3{bottom:8%; left:-5px; background:var(--amber); color:var(--amber)}
-
-  .cta-row{display:flex; gap:.7rem; margin-top:1.3rem; flex-wrap:wrap}
-  .btn{
-    border:none; padding:.75rem 1.35rem; border-radius:10px; font-weight:700; cursor:pointer;
-    font-size:.93rem; transition:.2s ease; letter-spacing:.2px;
-  }
-  .btn-primary{background:var(--teal); color:#fff}
-  .btn-primary:hover{filter:brightness(1.08); transform:translateY(-1px)}
-  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--ink)}
-  .btn-ghost:hover{border-color:var(--teal); color:var(--teal)}
-  .btn-sm{padding:.5rem .9rem; font-size:.82rem; border-radius:8px}
-
-  /* Progress rings */
-  .progress-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1rem; margin:2.2rem 0}
-  .pring-card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:1.1rem; display:flex; align-items:center; gap:.9rem}
-  .pring{width:56px;height:56px; border-radius:50%; flex:0 0 auto; display:grid; place-items:center; font-family:var(--font-mono); font-size:.72rem; font-weight:700}
-  .pring-label{font-size:.8rem; color:var(--ink-dim)}
-  .pring-title{font-weight:700; font-size:.95rem}
-
-  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:1.2rem; margin-top:1.4rem}
-  .card{
-    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:1.4rem;
-    transition:.25s ease; position:relative; overflow:hidden;
-  }
-  .card:hover{transform:translateY(-3px); border-color:var(--teal); box-shadow:0 10px 25px rgba(0,0,0,.1)}
-  .card h3{color:var(--teal); margin-bottom:.5rem}
-  .card p{color:var(--ink-dim); font-size:.92rem}
-  .tag{
-    display:inline-block; font-family:var(--font-mono); font-size:.68rem; padding:.2rem .55rem; border-radius:6px;
-    letter-spacing:.5px; margin-bottom:.6rem; text-transform:uppercase;
-  }
-  .lvl-1{background:rgba(62,230,200,.14); color:var(--teal)}
-  .lvl-2{background:rgba(167,139,250,.16); color:var(--violet)}
-  .lvl-3{background:rgba(245,185,66,.16); color:var(--amber)}
-
-  /* Section head */
-  .section-head{display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1rem}
-  .level-tabs{display:flex; gap:.4rem}
-  .lvl-tab{
-    background:var(--panel); border:1px solid var(--line); color:var(--ink-dim); padding:.45rem .9rem;
-    border-radius:999px; cursor:pointer; font-size:.82rem; font-weight:600;
-  }
-  .lvl-tab.active{color:var(--void); background:var(--teal); border-color:var(--teal)}
-
-  .toolbar{display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; margin-bottom:1.2rem}
-  select.pill, input.pill{
-    background:var(--panel); border:1px solid var(--line); color:var(--ink); padding:.5rem .8rem;
-    border-radius:999px; font-size:.85rem; outline:none;
-  }
-
-  /* Vocab cards */
-  .vocab-card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:1rem 1.1rem}
-  .vocab-word{font-family:var(--font-display); font-weight:700; font-size:1.05rem; margin-bottom:.3rem}
-  .vocab-row{display:flex; justify-content:space-between; font-size:.85rem; color:var(--ink-dim); padding:.15rem 0; border-top:1px dashed var(--line)}
-  .vocab-row span:first-child{color:var(--ink)}
-
-  /* Quiz */
-  .quiz-box{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:1.4rem; margin-top:1.4rem}
-  .quiz-meta{display:flex; justify-content:space-between; align-items:center; margin-bottom:.9rem; font-size:.82rem; color:var(--ink-dim)}
-  .quiz-q{font-size:1.05rem; font-weight:600; margin-bottom:1rem}
-  .quiz-option{
-    background:var(--panel-2); border:1px solid var(--line); padding:.8rem 1rem; margin:.5rem 0;
-    border-radius:10px; cursor:pointer; transition:.15s ease; font-size:.93rem;
-  }
-  .quiz-option:hover{border-color:var(--violet);}
-  .quiz-option.correct{border-color:var(--teal); background:rgba(62,230,200,.10)}
-  .quiz-option.wrong{border-color:var(--rose); background:rgba(255,107,139,.10)}
-  .quiz-feedback{margin-top:.8rem; font-weight:700; min-height:1.4em}
-  .score-pill{font-family:var(--font-mono); background:var(--panel-2); border:1px solid var(--line); padding:.3rem .7rem; border-radius:999px}
-
-  /* Lesson list */
-  .lesson{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:1.1rem 1.2rem; margin-bottom:.85rem}
-  .lesson-head{display:flex; justify-content:space-between; align-items:center; gap:1rem; cursor:pointer}
-  .lesson-title{font-weight:700; font-family:var(--font-display)}
-  .lesson-body{max-height:0; overflow:hidden; transition:max-height .3s ease}
-  .lesson-body.open{max-height:400px; margin-top:.7rem}
-  .lesson-body p{color:var(--ink-dim); font-size:.92rem; margin-bottom:.6rem}
-  .check-btn{background:transparent; border:1px solid var(--line); color:var(--ink-dim); border-radius:6px; padding:.3rem .5rem; cursor:pointer; font-size:.75rem}
-  .check-btn.done{color:var(--teal); border-color:var(--teal)}
-  .chev{font-family:var(--font-mono); color:var(--ink-dim); transition:.25s ease}
-  .chev.open{transform:rotate(90deg)}
-
-  /* Code editor */
-  .editor-wrap{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:1.3rem; margin-top:1.4rem}
-  textarea#codeInput{
-    width:100%; min-height:170px; background:var(--panel-2); color:var(--teal); border:1px solid var(--line);
-    border-radius:10px; padding:1rem; font-family:var(--font-mono); font-size:.88rem; resize:vertical; outline:none;
-  }
-  .output-box{
-    background:var(--panel-2); border:1px solid var(--violet); border-radius:10px; padding:1rem; min-height:70px;
-    font-family:var(--font-mono); font-size:.88rem; margin-top:.9rem; white-space:pre-wrap; color:var(--ink);
-  }
-
-  /* Chat */
-  .chat-wrap{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:1.2rem; margin-top:1rem}
-  .chat-box{height:400px; overflow-y:auto; display:flex; flex-direction:column; gap:.7rem; padding:.4rem}
-  .msg{max-width:78%; padding:.7rem 1rem; border-radius:14px; font-size:.92rem; line-height:1.45}
-  .msg.user{align-self:flex-end; background:var(--violet); color:#fff; border-bottom-right-radius:3px}
-  .msg.ai{align-self:flex-start; background:var(--panel-2); border:1px solid var(--line); border-bottom-left-radius:3px}
-  .chat-input-row{display:flex; gap:.6rem; margin-top:1rem}
-  .chat-input{flex:1; background:var(--panel-2); border:1px solid var(--line); padding:.75rem 1rem; border-radius:10px; color:var(--ink); outline:none}
-  .suggestions{display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.7rem}
-  .sugg{background:var(--panel-2); border:1px solid var(--line); color:var(--ink-dim); font-size:.78rem; padding:.35rem .7rem; border-radius:999px; cursor:pointer}
-  .sugg:hover{color:var(--teal); border-color:var(--teal)}
-
-  .ai-status{display:flex;align-items:center;gap:.5rem;margin-top:.8rem;font-size:.78rem;color:var(--ink-dim)}
-  .ai-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 10px var(--teal)}
-  .ai-dot.busy{animation:pulse 1s ease-in-out infinite}
-  @keyframes pulse{50%{opacity:.35;transform:scale(.8)}}
-  .ai-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem}
-  .msg.ai code{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:.05rem .35rem;font-family:var(--font-mono);font-size:.85em}
-  .msg.ai pre.code-block{background:var(--void);border:1px solid var(--line);border-radius:8px;padding:.7rem .85rem;overflow-x:auto;margin:.5rem 0}
-  .msg.ai pre.code-block code{background:none;border:none;padding:0;color:var(--teal)}
-  .msg.typing{display:flex;gap:.3rem;align-items:center;padding:.9rem 1.1rem}
-  .msg.typing .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-dim);animation:typingBounce 1.1s infinite ease-in-out}
-  .msg.typing .dot:nth-child(2){animation-delay:.15s}
-  .msg.typing .dot:nth-child(3){animation-delay:.3s}
-  @keyframes typingBounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
-  footer{border-top:1px solid var(--line); padding:1.6rem; text-align:center; color:var(--ink-dim); font-size:.82rem}
-  .note{background:rgba(245,185,66,.1); border:1px solid rgba(245,185,66,.3); color:var(--amber); border-radius:10px; padding:.9rem 1.1rem; font-size:.85rem; margin-top:1.4rem}
-
-  /* ===== Auth / tiers ===== */
-  .auth-area{display:flex;align-items:center;gap:.6rem}
-  .auth-area .avatar{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);object-fit:cover}
-  .tier-badge{font-family:var(--font-mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--teal);color:var(--teal)}
-  .tier-badge.tier-plus{border-color:var(--violet);color:var(--violet)}
-  .tier-badge.tier-pro{border-color:var(--amber);color:var(--amber)}
-  .tier-badge.tier-elite{border-color:var(--rose);color:var(--rose)}
-  #appGate.locked{filter:blur(5px);pointer-events:none;user-select:none}
-  .login-overlay{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:rgba(10,14,23,.72);backdrop-filter:blur(3px)}
-  [data-theme="light"] .login-overlay{background:rgba(241,245,249,.82)}
-  .login-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:2rem 2.2rem;max-width:360px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35)}
-  .login-card h3{margin-bottom:.5rem}
-  .login-card p{color:var(--ink-dim);font-size:.9rem;margin-bottom:1.2rem}
-  .google-btn{display:inline-flex;align-items:center;gap:.6rem;background:#fff;color:#1f1f1f;border:1px solid var(--line);border-radius:10px;padding:.65rem 1.2rem;font-weight:700;font-size:.9rem;cursor:pointer;text-decoration:none}
-  .google-btn:hover{filter:brightness(.97)}
-  .google-btn:disabled{opacity:.65;cursor:wait}
-  .auth-hint{margin-top:.8rem;font-size:.72rem;color:var(--ink-dim)}
-  .auth-error{margin-top:.8rem;padding:.65rem .75rem;border-radius:8px;border:1px solid rgba(255,107,139,.35);background:rgba(255,107,139,.08);color:var(--rose);font-size:.78rem;display:none}
-  .auth-error.show{display:block}
-  .usage-banner{display:flex;align-items:center;justify-content:space-between;gap:1rem;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:.7rem 1rem;font-size:.82rem;color:var(--ink-dim);margin-top:.9rem;flex-wrap:wrap}
-  .usage-banner .bar{flex:1;min-width:120px;height:6px;border-radius:999px;background:var(--line);overflow:hidden}
-  .usage-banner .bar-fill{height:100%;background:var(--teal);transition:width .3s ease}
-
-  /* ===== Pricing ===== */
-  .pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.1rem;margin-top:1.5rem}
-  .price-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem;display:flex;flex-direction:column;gap:.7rem}
-  .price-card.current{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
-  .price-card .price-name{font-family:var(--font-display);font-size:1.15rem;font-weight:700}
-  .price-card .price-amount{font-size:1.8rem;font-weight:700}
-  .price-card .price-amount span{font-size:.85rem;color:var(--ink-dim);font-weight:500}
-  .price-card ul{list-style:none;font-size:.85rem;color:var(--ink-dim);display:flex;flex-direction:column;gap:.4rem}
-  .price-card ul li::before{content:'✓ ';color:var(--teal);font-weight:700}
-  .price-card .btn{margin-top:auto}
-  .upgrade-modal{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:rgba(10,14,23,.72)}
-  [data-theme="light"] .upgrade-modal{background:rgba(241,245,249,.82)}
-  .upgrade-modal-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.8rem;max-width:380px;text-align:center}
-
-  /* ===== Combined build enhancements ===== */
-  .auth-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem;color:var(--ink-dim)}
-  .auth-link{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:.42rem .7rem;border-radius:8px;cursor:pointer;font-size:.76rem;font-weight:700}
-  .auth-link:hover{border-color:var(--teal);color:var(--teal)}
-  .price-card.featured{border-color:var(--violet);box-shadow:0 0 0 1px rgba(167,139,250,.35),0 12px 35px rgba(0,0,0,.12)}
-  .price-card .price-desc{color:var(--ink-dim);font-size:.84rem;min-height:2.7em}
-  .price-card .price-kicker{font-family:var(--font-mono);font-size:.68rem;color:var(--violet);text-transform:uppercase;letter-spacing:1px}
-  .price-card .price-amount.free{color:var(--teal)}
-  .pricing-note{margin-top:1rem;padding:.8rem 1rem;border:1px solid var(--line);border-radius:10px;color:var(--ink-dim);font-size:.8rem}
-  .toast{position:fixed;right:1rem;bottom:1rem;z-index:900;max-width:360px;padding:.85rem 1rem;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:10px;box-shadow:0 15px 40px rgba(0,0,0,.25);font-size:.85rem;animation:rise .25s ease}
-  .hidden{display:none!important}
-  @media(max-width:1050px){header{padding:.8rem 1rem}nav{order:3;width:100%;justify-content:center}.headerRight{margin-left:auto}}
-  @media(max-width:650px){main{padding:1.2rem 1rem 4rem}.hero{gap:1rem}.orbit-wrap{max-width:290px}.chat-box{height:360px}.msg{max-width:90%}.headerRight{width:100%;justify-content:flex-end}.auth-name{display:none}}
-
-  .modal-close{position:absolute;right:.65rem;top:.55rem;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--panel-2);color:var(--ink-dim);cursor:pointer;font-size:1.2rem;line-height:1}.login-card{position:relative}
-  .study-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1.2rem}.study-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1.15rem}.study-card-head{display:flex;justify-content:space-between;align-items:center;gap:.8rem;margin-bottom:.8rem}.study-card-head h3{color:var(--ink);margin:0}.study-card-head>span{font-family:var(--font-mono);font-size:.78rem;color:var(--teal)}.study-input{width:100%;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:.7rem .8rem;outline:none}.study-input:focus,.study-notes:focus{border-color:var(--teal)}.study-input.small{max-width:130px}.study-row{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin-top:.7rem}.goal-bar{height:8px;background:var(--line);border-radius:999px;overflow:hidden;margin:.9rem 0}.goal-bar>div{height:100%;width:0;background:var(--teal);transition:width .3s ease}.timer-display{text-align:center;font-family:var(--font-mono);font-size:3rem;font-weight:700;letter-spacing:2px;margin:.8rem 0}.timer-presets{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center}.timer-status{text-align:center;color:var(--ink-dim);font-size:.78rem;margin-top:.7rem}.flashcard{min-height:120px;border:1px dashed var(--line);border-radius:12px;background:var(--panel-2);display:grid;place-items:center;text-align:center;padding:1rem;cursor:pointer;font-weight:700}.flashcard.flipped{border-color:var(--violet)}.study-notes{width:100%;min-height:150px;resize:vertical;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:.85rem;outline:none;font:inherit}.study-plan{margin-top:1rem}.plan-output{display:grid;gap:.55rem}.plan-item{display:flex;gap:.7rem;align-items:flex-start;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:.75rem}.plan-item .plan-num{font-family:var(--font-mono);color:var(--teal);font-weight:700}.pricing-note{margin-top:1rem;padding:.8rem 1rem;border:1px solid var(--line);border-radius:10px;color:var(--ink-dim);font-size:.8rem}.toast{position:fixed;right:1rem;bottom:1rem;z-index:900;max-width:380px;padding:.85rem 1rem;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:10px;box-shadow:0 15px 40px rgba(0,0,0,.25);font-size:.85rem}.hidden{display:none!important}@media(max-width:760px){.study-grid{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-
-<header>
-  <div class="brand">
-    <svg class="mark" viewBox="0 0 30 30"><circle cx="15" cy="15" r="13" fill="none" stroke="var(--teal)" stroke-width="1.4"/><circle cx="15" cy="15" r="7" fill="none" stroke="var(--violet)" stroke-width="1.4"/><circle cx="15" cy="15" r="2.3" fill="var(--amber)"/></svg>
-    <span id="brandName">Nexora Academy</span>
-  </div>
-  <nav>
-    <button class="nav-btn active" data-page="home" onclick="switchTab('home', this)">Home</button>
-    <button class="nav-btn" data-page="languages" onclick="switchTab('languages', this)">Languages</button>
-    <button class="nav-btn" data-page="coding" onclick="switchTab('coding', this)">Web Dev</button>
-    <button class="nav-btn" data-page="stem" onclick="switchTab('stem', this)">Math & Physics</button>
-    <button class="nav-btn" data-page="ai" onclick="switchTab('ai', this)">Assistant</button>
-    <button class="nav-btn" data-page="study" onclick="switchTab('study', this)">Study Hub</button>
-    <button class="nav-btn" data-page="pricing" onclick="switchTab('pricing', this)">Pricing</button>
-  </nav>
-  <div class="headerRight">
-    <div id="authArea" class="auth-area"></div>
-    <button class="theme-btn" onclick="toggleTheme()" title="Toggle Light/Dark Mode">🌓</button>
-    <select class="lang-select" id="langSelect" onchange="setLang(this.value)">
-      <option value="en">English 🇬🇧</option>
-      <option value="uz">O'zbekcha 🇺🇿</option>
-      <option value="ru">Русский 🇷🇺</option>
-    </select>
-  </div>
-</header>
-
-<div id="loginOverlay" class="login-overlay" style="display:none">
-  <div class="login-card">
-    <button class="modal-close" onclick="hideLogin()" aria-label="Close">×</button>
-    <h3 data-i18n="loginTitle">Sign in to start learning</h3>
-    <p data-i18n="loginSub">Create a free account to save your progress and chat with the Assistant.</p>
-    <button id="googleLoginBtn" class="google-btn" onclick="startGoogleLogin()">
-      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.66 9c0-.59.1-1.16.29-1.7V4.97H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.03l2.97-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.97l2.97 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
-      <span data-i18n="loginBtn">Sign in with Google</span>
-    </button>
-    <div class="auth-hint">Google handles the password and account security. Nexora only receives the sign-in result.</div>
-    <div id="authError" class="auth-error" role="alert"></div>
-  </div>
-</div>
-
-<div id="upgradeModal" class="upgrade-modal" style="display:none">
-  <div class="upgrade-modal-card">
-    <h3 data-i18n="upgradeTitle">You've hit today's limit</h3>
-    <p class="sub" id="upgradeModalText" style="margin:.6rem 0 1.2rem"></p>
-    <button class="btn btn-primary" onclick="switchTabById('pricing');closeUpgradeModal()" data-i18n="upgradeCta">See plans</button>
-    <button class="btn btn-ghost" style="margin-top:.6rem" onclick="closeUpgradeModal()" data-i18n="upgradeClose">Not now</button>
-  </div>
-</div>
-
-<main id="appGate">
-
-  <!-- HOME -->
-  <section id="page-home" class="page active">
-    <div class="hero">
-      <div>
-        <div class="eyebrow" data-i18n="eyebrowHome">AI learning network · online</div>
-        <h1 id="homeTitle">Learn faster. Build smarter. Think bigger.</h1>
-        <p class="sub" id="homeSub">A focused learning workspace for languages, coding, mathematics, physics, and an AI tutor that grows with you.</p>
-        <div class="cta-row">
-          <button class="btn btn-primary" data-i18n="ctaStart" onclick="switchTabById('languages')">Start learning</button>
-          <button class="btn btn-ghost" data-i18n="ctaTutor" onclick="switchTabById('ai')">Talk to Assistant</button>
-        </div>
-      </div>
-      <div class="orbit-wrap" aria-hidden="true">
-        <div class="orbit-ring"></div>
-        <div class="orbit-ring r2"></div>
-        <div class="orbit-ring r3"></div>
-        <div class="node n1"></div>
-        <div class="node n2"></div>
-        <div class="node n3"></div>
-        <div class="orbit-core" data-i18n="orbitCore">AI · CODE<br>LANGUAGES · STEM</div>
-      </div>
-    </div>
-
-    <div class="section-head">
-      <h2 data-i18n="progressTitle">Your progress</h2>
-    </div>
-    <div class="progress-strip" id="progressStrip"></div>
-
-    <div class="grid">
-      <div class="card">
-        <h3 data-i18n="c1Title">🌐 Language Lab</h3>
-        <p data-i18n="c1Desc">30 core words in English, Uzbek and Russian, three difficulty levels, and instant quizzes.</p>
-        <button class="btn btn-sm btn-ghost" data-i18n="btnOpen" onclick="switchTabById('languages')">Open</button>
-      </div>
-      <div class="card">
-        <h3 data-i18n="c2Title">💻 Full-Stack Lab</h3>
-        <p data-i18n="c2Desc">24 lessons across Frontend and Backend, a live JavaScript console, and concept quizzes.</p>
-        <button class="btn btn-sm btn-ghost" data-i18n="btnOpen" onclick="switchTabById('coding')">Open</button>
-      </div>
-      <div class="card">
-        <h3 data-i18n="c3Title">⚛️ Math & Physics</h3>
-        <p data-i18n="c3Desc">20 topics from algebra to quantum physics, with formulas explained and quizzes.</p>
-        <button class="btn btn-sm btn-ghost" data-i18n="btnOpen" onclick="switchTabById('stem')">Open</button>
-      </div>
-    </div>
-
-    <div class="note" data-i18n="honestNote">
-      Heads up: the Assistant works two ways. With no setup at all it runs a keyword + lesson-matching tutor fully offline in your browser. If you run the included server.py with a GROQ_API_KEY, it calls a real language model through your own backend instead — the browser never sees the key. See the note in the Assistant tab for details.
-    </div>
-  </section>
-
-  <section id="page-study" class="page">
-    <div class="section-head"><div>
-      <div class="eyebrow" data-i18n="eyebrowStudy">Study hub</div>
-      <h2 data-i18n="studyHeading">Your personal study cockpit</h2>
-      <p class="sub" data-i18n="studySub">Plan a session, focus with a timer, review flashcards, and keep quick notes — all stored locally in your browser.</p>
-    </div></div>
-    <div class="study-grid">
-      <div class="study-card">
-        <div class="study-card-head"><h3>🎯 <span data-i18n="goalTitle">Today's goal</span></h3><span id="goalProgressText">0%</span></div>
-        <input id="goalInput" class="study-input" maxlength="120" data-i18n-ph="goalPh" placeholder="What do you want to accomplish today?">
-        <div class="study-row"><input id="goalMinutes" class="study-input small" type="number" min="5" max="600" value="60"><button class="btn btn-primary btn-sm" onclick="saveStudyGoal()" data-i18n="saveGoal">Save goal</button></div>
-        <div class="goal-bar"><div id="goalBarFill"></div></div>
-        <button class="btn btn-ghost btn-sm" onclick="completeGoalStep()" data-i18n="completeStep">Complete a study step</button>
-      </div>
-      <div class="study-card">
-        <div class="study-card-head"><h3>⏱️ <span data-i18n="focusTitle">Focus timer</span></h3><span id="timerMode">25:00</span></div>
-        <div class="timer-display" id="focusTimer">25:00</div>
-        <div class="timer-presets"><button class="sugg" onclick="setFocusTimer(25)">25 min</button><button class="sugg" onclick="setFocusTimer(5)">5 min</button><button class="sugg" onclick="setFocusTimer(45)">45 min</button><button class="sugg" onclick="setFocusTimer(60)">60 min</button></div>
-        <div class="study-row"><button class="btn btn-primary btn-sm" id="timerStartBtn" onclick="toggleFocusTimer()">Start</button><button class="btn btn-ghost btn-sm" onclick="resetFocusTimer()">Reset</button></div>
-        <div class="timer-status" id="timerStatus">Ready to focus.</div>
-      </div>
-      <div class="study-card">
-        <div class="study-card-head"><h3>🧠 <span data-i18n="reviewTitle">Smart review</span></h3><span id="reviewCount">0</span></div>
-        <p class="sub" data-i18n="reviewSub">Save difficult vocabulary for quick spaced review. Cards you miss return sooner.</p>
-        <div id="flashcard" class="flashcard" onclick="flipFlashcard()"><div id="flashcardFront">Tap to reveal</div><div id="flashcardBack" class="hidden">—</div></div>
-        <div class="study-row"><button class="btn btn-ghost btn-sm" onclick="reviewAnswer(false)">Need review</button><button class="btn btn-primary btn-sm" onclick="reviewAnswer(true)">Got it</button></div>
-      </div>
-      <div class="study-card">
-        <div class="study-card-head"><h3>📝 <span data-i18n="notesTitle">Quick notes</span></h3><button class="btn btn-sm btn-ghost" onclick="clearStudyNotes()">Clear</button></div>
-        <textarea id="studyNotes" class="study-notes" maxlength="5000" data-i18n-ph="notesPh" placeholder="Write formulas, reminders, questions, or things to review..."></textarea>
-        <div class="study-row"><span class="sub" id="notesSaved">Saved locally</span><button class="btn btn-primary btn-sm" onclick="saveStudyNotes()">Save</button></div>
-      </div>
-    </div>
-    <div class="study-card study-plan">
-      <div class="study-card-head"><h3>🗺️ <span data-i18n="planTitle">Build a study plan</span></h3><button class="btn btn-primary btn-sm" onclick="generateStudyPlan()">Generate</button></div>
-      <div class="toolbar"><select id="planSubject" class="pill"><option value="math">Mathematics</option><option value="physics">Physics</option><option value="coding">Coding</option><option value="languages">Languages</option></select><select id="planTime" class="pill"><option value="30">30 min</option><option value="60" selected>60 min</option><option value="90">90 min</option><option value="120">120 min</option></select><select id="planDays" class="pill"><option value="1">1 day</option><option value="3" selected>3 days</option><option value="7">7 days</option></select></div>
-      <div id="studyPlanOutput" class="plan-output"><span class="sub">Your generated plan will appear here.</span></div>
-    </div>
-  </section>
-
-  <!-- LANGUAGES -->
-  <section id="page-languages" class="page">
-    <div class="section-head">
-      <div>
-        <div class="eyebrow" data-i18n="eyebrowLang">Language lab</div>
-        <h2 data-i18n="langHeading">Vocabulary & quizzes</h2>
-        <p class="sub" data-i18n="langSub">Pick the language you want to learn, then a level.</p>
-      </div>
-    </div>
-    <div class="toolbar">
-      <select class="pill" id="learnLangSelect" onchange="renderVocab()"></select>
-      <div class="level-tabs" id="vocabLevelTabs"></div>
-    </div>
-    <div class="grid" id="vocabGrid"></div>
-
-    <div class="quiz-box">
-      <div class="quiz-meta">
-        <span data-i18n="quizLabel">Vocabulary quiz</span>
-        <span class="score-pill" id="vocabScore">0 / 0</span>
-      </div>
-      <div class="quiz-q" id="vocabQ">—</div>
-      <div id="vocabOptions"></div>
-      <div class="quiz-feedback" id="vocabFeedback"></div>
-      <button class="btn btn-sm btn-primary" style="margin-top:.8rem" data-i18n="nextQ" onclick="nextVocabQ()">Next question</button>
-    </div>
-  </section>
-
-  <!-- CODING -->
-  <section id="page-coding" class="page">
-    <div class="section-head">
-      <div>
-        <div class="eyebrow" data-i18n="eyebrowCode">Full-stack lab</div>
-        <h2 data-i18n="codeHeading">Frontend & Backend lessons</h2>
-        <p class="sub" data-i18n="codeSub">Expand a lesson, mark it done, then try the concept in the live console below.</p>
-      </div>
-    </div>
-    <div class="toolbar">
-      <select class="pill" id="trackSelect" onchange="renderLessons('coding')">
-        <option value="all" data-i18n="trackAll">All tracks</option>
-        <option value="frontend" data-i18n="trackFront">Frontend</option>
-        <option value="backend" data-i18n="trackBack">Backend</option>
-      </select>
-      <div class="level-tabs" id="codeLevelTabs"></div>
-    </div>
-    <div id="codingLessons"></div>
-
-    <div class="editor-wrap">
-      <h3 data-i18n="consoleTitle">Live JavaScript console</h3>
-      <p class="sub" style="margin:.4rem 0 1rem" data-i18n="consoleSub">Write JavaScript and run it — this runs safely inside the page, nothing is sent anywhere.</p>
-      <div>
-        <textarea id="codeInput">const speedOfLight = 299792458; // m/s
-console.log("Speed of light: " + speedOfLight + " m/s");</textarea>
-        <button class="btn btn-primary btn-sm" style="margin-top:.8rem" data-i18n="runCode" onclick="runCode()">Run code</button>
-        <div class="output-box" id="codeOutput" data-i18n="outputPlaceholder">Output will appear here…</div>
-      </div>
-    </div>
-
-    <div class="quiz-box">
-      <div class="quiz-meta"><span data-i18n="conceptQuiz">Concept check</span><span class="score-pill" id="codeScore">0 / 0</span></div>
-      <div class="quiz-q" id="codeQ">—</div>
-      <div id="codeOptions"></div>
-      <div class="quiz-feedback" id="codeFeedback"></div>
-      <button class="btn btn-sm btn-primary" style="margin-top:.8rem" data-i18n="nextQ" onclick="nextConceptQ('coding')">Next question</button>
-    </div>
-  </section>
-
-  <!-- STEM -->
-  <section id="page-stem" class="page">
-    <div class="section-head">
-      <div>
-        <div class="eyebrow" data-i18n="eyebrowStem">Math & physics</div>
-        <h2 data-i18n="stemHeading">Formulas & concepts</h2>
-        <p class="sub" data-i18n="stemSub">From order of operations to quantum physics.</p>
-      </div>
-    </div>
-    <div class="toolbar">
-      <select class="pill" id="subjectSelect" onchange="renderLessons('stem')">
-        <option value="all" data-i18n="subjAll">All subjects</option>
-        <option value="math" data-i18n="subjMath">Math</option>
-        <option value="physics" data-i18n="subjPhysics">Physics</option>
-      </select>
-      <div class="level-tabs" id="stemLevelTabs"></div>
-    </div>
-    <div id="stemLessons"></div>
-
-    <div class="quiz-box">
-      <div class="quiz-meta"><span data-i18n="conceptQuiz">Concept check</span><span class="score-pill" id="stemScore">0 / 0</span></div>
-      <div class="quiz-q" id="stemQ">—</div>
-      <div id="stemOptions"></div>
-      <div class="quiz-feedback" id="stemFeedback"></div>
-      <button class="btn btn-sm btn-primary" style="margin-top:.8rem" data-i18n="nextQ" onclick="nextConceptQ('stem')">Next question</button>
-    </div>
-  </section>
-
-  <!-- AI TUTOR -->
-  <section id="page-ai" class="page">
-    <div class="eyebrow" data-i18n="eyebrowAi">Study companion</div>
-    <h2 data-i18n="aiHeading">Assistant</h2>
-    <p class="sub" data-i18n="aiSub">Ask about vocabulary, coding, or math & physics. Try "what does algorithm mean" or "explain Newton's laws".</p>
-    <div class="ai-hero-card">
-      <div class="ai-hero-main">
-        <div class="ai-orb"><span></span></div>
-        <div><strong>Nexora AI</strong><p>One assistant for learning, coding, problem solving, and everyday questions.</p></div>
-      </div>
-      <div class="ai-capabilities" aria-label="AI capabilities">
-        <span>🧠 Reasoning</span><span>💻 Coding</span><span>🧮 Math</span><span>🌍 Languages</span><span>🧪 Science</span><span>📚 Tutor</span>
-      </div>
-    </div>
-    <div class="chat-wrap">
-      <div class="chat-box" id="chatBox"></div>
-      <div class="chat-input-row">
-        <input type="text" id="chatInput" class="chat-input" data-i18n-ph="chatPh" placeholder="Ask Assistant anything…" onkeypress="if(event.key==='Enter') sendMsg()">
-        <button class="btn btn-primary" onclick="sendMsg()" data-i18n="send">Send</button>
-      </div>
-      <div class="suggestions" id="chatSuggestions"></div>
-      <div class="ai-actions"><button class="btn btn-sm btn-ghost" onclick="clearChat()">Clear chat</button></div>
-      <div class="ai-status" id="aiStatus" aria-live="polite"><span class="ai-dot"></span><span id="aiStatusText">AI ready</span></div>
-    </div>
-    <div class="note" data-i18n="aiNote">
-      This Assistant tries a real AI model first, through this site's own /api/chat backend (server.py), which keeps the Groq API key on the server and out of the browser. If that backend isn't running or isn't configured with a key, it automatically falls back to a rule-based offline tutor built from this site's own lesson and vocabulary data — so the page always responds, online or off.
-    </div>
-  </section>
-
-  <!-- PRICING -->
-  <section id="page-pricing" class="page">
-    <div class="eyebrow" data-i18n="eyebrowPricing">Plans</div>
-    <h2 data-i18n="pricingHeading">Choose your plan</h2>
-    <p class="sub" data-i18n="pricingSub">Every plan includes all lessons, quizzes, and the live code console. Paid plans raise your daily Assistant limit and unlock a stronger AI model.</p>
-    <div class="pricing-grid" id="pricingGrid"></div><div class="pricing-note">Secure checkout powered by Stripe. You'll be redirected to Stripe's official payment page — Nexora never sees or stores your card details.</div>
-    <p class="sub" id="portalLink" style="margin-top:1.2rem"></p>
-  </section>
-
-</main>
-
-<footer id="footerText">Nexora — an AI learning workspace for EN · UZ · RU, coding, mathematics, physics, and general learning.</footer>
-
-<script>
-/* ============================= THEME TOGGLE ============================= */
-let isLight = localStorage.getItem('nexora_theme') === 'light';
-if (isLight) document.documentElement.setAttribute('data-theme', 'light');
-
-function toggleTheme() {
-  isLight = !isLight;
-  if (isLight) {
-    document.documentElement.setAttribute('data-theme', 'light');
-    localStorage.setItem('nexora_theme', 'light');
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-    localStorage.setItem('nexora_theme', 'dark');
-  }
-}
-
-/* ============================= I18N ============================= */
-const UI = {
-en:{
-  brandName:"Nexora Academy",
-  navHome:"Home", navLang:"Languages", navCode:"Web Dev", navStem:"Math & Physics", navAi:"Assistant",
-  eyebrowHome:"AI learning network · online",
-  homeTitle:"Learn faster. Build smarter. Think bigger.",
-  homeSub:"English, Uzbek and Russian lessons, a full-stack coding lab, and math & physics — with quizzes, levels, and an Assistant.",
-  ctaStart:"Start learning", ctaTutor:"Talk to Assistant",
-  orbitCore:"AI · CODE<br>LANGUAGES · STEM",
-  progressTitle:"Your progress",
-  c1Title:"🌐 Language Lab", c1Desc:"30 core words in English, Uzbek and Russian, three difficulty levels, and instant quizzes.",
-  c2Title:"💻 Full-Stack Lab", c2Desc:"24 lessons across Frontend and Backend, a live JavaScript console, and concept quizzes.",
-  c3Title:"⚛️ Math & Physics", c3Desc:"20 topics from algebra to quantum physics, with formulas explained and quizzes.",
-  btnOpen:"Open",
-  honestNote:"Heads up: the Assistant works two ways. With no setup at all it runs a keyword + lesson-matching tutor fully offline in your browser. If you run the included server.py with a GROQ_API_KEY, it calls a real language model through your own backend instead — the browser never sees the key. See the note in the Assistant tab for details.",
-  eyebrowLang:"Language lab", langHeading:"Vocabulary & quizzes", langSub:"Pick the language you want to learn, then a level.",
-  learnLangLabel:"Learning:", quizLabel:"Vocabulary quiz", nextQ:"Next question",
-  levelAll:"All levels", lvl1:"Beginner", lvl2:"Intermediate", lvl3:"Advanced",
-  eyebrowCode:"Full-stack lab", codeHeading:"Frontend & Backend lessons", codeSub:"Expand a lesson, mark it done, then try the concept in the live console below.",
-  trackAll:"All tracks", trackFront:"Frontend", trackBack:"Backend",
-  consoleTitle:"Live JavaScript console", consoleSub:"Write JavaScript and run it — this runs safely inside the page, nothing is sent anywhere.",
-  runCode:"Run code", outputPlaceholder:"Output will appear here…", conceptQuiz:"Concept check",
-  eyebrowStem:"Math & physics", stemHeading:"Formulas & concepts", stemSub:"From order of operations to quantum physics.",
-  subjAll:"All subjects", subjMath:"Math", subjPhysics:"Physics",
-  eyebrowAi:"Study companion", aiHeading:"Assistant", aiSub:'Ask about vocabulary, coding, or math & physics. Try "what does algorithm mean" or "explain Newton\'s laws".',
-  chatPh:"Ask Assistant anything…", send:"Send",
-  aiNote:"This Assistant tries a real AI model first, through this site's own /api/chat backend (server.py), which keeps the Groq API key on the server and out of the browser. If that backend isn't running or isn't configured with a key, it automatically falls back to a rule-based offline tutor built from this site's own lesson and vocabulary data — so the page always responds, online or off.",
-  footerText:"Nexora — an AI learning workspace for EN · UZ · RU, coding, mathematics, physics, and general learning.",
-  markDone:"Mark done", done:"Done ✓",
-  correct:"Correct!", incorrect:"Not quite.",
-  greet:"Hi! I'm your Assistant. Ask me about vocabulary, coding, or math & physics — for example: \"what does technology mean\", \"explain flexbox\", or \"what is Newton's second law\".",
-  loginTitle:"Sign in to start learning", loginSub:"Create a free account to save your progress and chat with the Assistant.", loginBtn:"Sign in with Google",
-  upgradeTitle:"You've hit today's limit", upgradeCta:"See plans", upgradeClose:"Not now",
-  eyebrowPricing:"Plans", pricingHeading:"Choose your plan", pricingSub:"Every plan includes all lessons, quizzes, and the live code console. Paid plans raise your daily Assistant limit and unlock a stronger AI model.",
-  signOut:"Sign out", currentPlan:"Current plan", manageBilling:"Manage billing", perMonth:"/mo", upgradeBtn:"Upgrade", freeBtn:"Get started",
-   eyebrowStudy:"Study hub", studyHeading:"Your personal study cockpit", studySub:"Plan a session, focus with a timer, review flashcards, and keep quick notes — all stored locally in your browser.", goalTitle:"Today's goal", goalPh:"What do you want to accomplish today?", saveGoal:"Save goal", completeStep:"Complete a study step", focusTitle:"Focus timer", reviewTitle:"Smart review", reviewSub:"Save difficult vocabulary for quick spaced review. Cards you miss return sooner.", notesTitle:"Quick notes", notesPh:"Write formulas, reminders, questions, or things to review...", planTitle:"Build a study plan", authNotConfigured:"Google sign-in is not configured on this server yet. Add GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI to the server environment.", authUnavailable:"Google sign-in could not be started. Please check the server configuration.", navPricing:"Pricing"
-},
-uz:{
-  brandName:"Nexora Akademiyasi",
-  navHome:"Bosh sahifa", navLang:"Tillar", navCode:"Dasturlash", navStem:"Matematika & Fizika", navAi:"Assistant",
-  eyebrowHome:"Ta'lim tarmog'i · onlayn",
-  homeTitle:"Tillarni, dasturlashni va fanni bitta orbitada o'rganing.",
-  homeSub:"Ingliz, o'zbek va rus tili darslari, to'liq dasturlash laboratoriyasi hamda matematika va fizika — testlar, darajalar va yordamchi bilan.",
-  ctaStart:"O'rganishni boshlash", ctaTutor:"Assistant bilan gaplashish",
-  orbitCore:"EN · UZ · RU<br>+ KOD + FAN",
-  progressTitle:"Sizning natijalaringiz",
-  c1Title:"🌐 Til Markazi", c1Desc:"Ingliz, o'zbek va rus tillarida 30 ta asosiy so'z, uchta daraja va tezkor testlar.",
-  c2Title:"💻 Full-Stack Laboratoriya", c2Desc:"Frontend va Backend bo'yicha 24 ta dars, jonli JavaScript konsoli va bilim testlari.",
-  c3Title:"⚛️ Matematika & Fizika", c3Desc:"Algebradan kvant fizikasigacha 20 ta mavzu, formulalar tushuntirilgan va testlar bilan.",
-  btnOpen:"Ochish",
-  honestNote:"Diqqat: Assistant ikki xil ishlaydi. Hech qanday sozlamasiz u brauzeringizda to'liq oflayn ishlaydigan kalit so'z va darslar bo'yicha tutor sifatida ishlaydi. Agar GROQ_API_KEY bilan server.py ishga tushirilsa, u o'z backendingiz orqali haqiqiy til modeliga murojaat qiladi — kalit hech qachon brauzerga tushmaydi.",
-  eyebrowLang:"Til laboratoriyasi", langHeading:"Lug'at & testlar", langSub:"O'rganmoqchi bo'lgan tilingizni, so'ng darajani tanlang.",
-  learnLangLabel:"O'rganilayotgan til:", quizLabel:"Lug'at testi", nextQ:"Keyingi savol",
-  levelAll:"Barcha darajalar", lvl1:"Boshlang'ich", lvl2:"O'rta", lvl3:"Yuqori",
-  eyebrowCode:"Full-stack laboratoriya", codeHeading:"Frontend & Backend darslari", codeSub:"Darsni oching, tugagach belgilang, so'ng pastdagi jonli konsolda sinab ko'ring.",
-  trackAll:"Barcha yo'nalishlar", trackFront:"Frontend", trackBack:"Backend",
-  consoleTitle:"Jonli JavaScript konsoli", consoleSub:"JavaScript yozing va ishga tushiring — bu sahifa ichida xavfsiz ishlaydi, hech narsa hech qayerga yuborilmaydi.",
-  runCode:"Kodni ishga tushirish", outputPlaceholder:"Natija shu yerda chiqadi…", conceptQuiz:"Bilim tekshiruvi",
-  eyebrowStem:"Matematika va fizika", stemHeading:"Formulalar & tushunchalar", stemSub:"Amallar tartibidan kvant fizikasigacha.",
-  subjAll:"Barcha fanlar", subjMath:"Matematika", subjPhysics:"Fizika",
-  eyebrowAi:"O'quv yordamchisi", aiHeading:"Assistant", aiSub:'Lug\'at, dasturlash yoki matematika-fizika haqida so\'rang. Masalan: "algoritm nima" yoki "Nyutonning qonunlarini tushuntir".',
-  chatPh:"Assistant'dan so'rang…", send:"Yuborish",
-  aiNote:"Bu yordamchi avval saytning /api/chat backendi (server.py) orqali haqiqiy AI modelga murojaat qiladi — Groq API kaliti serverda qoladi, brauzerga chiqmaydi. Agar backend ishlamasa yoki kalit sozlanmagan bo'lsa, avtomatik ravishda saytning o'z darslari asosidagi oflayn tutorga o'tadi.",
-  footerText:"Nexora Akademiyasi — EN · UZ · RU tillari, dasturlash va fanlarni o'rganish uchun. Bu faylni istalgan brauzerda oching, tahrirlang.",
-  markDone:"Tugadi deb belgilash", done:"Tugadi ✓",
-  correct:"To'g'ri!", incorrect:"Unday emas.",
-  greet:"Salom! Men sizning yordamchiningizman. Lug'at, dasturlash yoki matematika-fizika haqida so'rang — masalan: \"texnologiya nima\", \"flexbox nima\" yoki \"Nyutonning ikkinchi qonuni nima\".",
-  loginTitle:"O'qishni boshlash uchun kiring", loginSub:"Progressingizni saqlash va Assistant bilan suhbatlashish uchun bepul hisob yarating.", loginBtn:"Google orqali kirish",
-  upgradeTitle:"Bugungi limitga yetdingiz", upgradeCta:"Tariflarni ko'rish", upgradeClose:"Hozir emas",
-  eyebrowPricing:"Tariflar", pricingHeading:"Tarifni tanlang", pricingSub:"Har bir tarif barcha darslar, testlar va jonli kod konsolini o'z ichiga oladi. Pullik tariflar kunlik Assistant limitini oshiradi va kuchliroq AI modelini ochadi.",
-  signOut:"Chiqish", currentPlan:"Joriy tarif", manageBilling:"To'lovni boshqarish", perMonth:"/oy", upgradeBtn:"Yangilash", freeBtn:"Boshlash",
-   eyebrowStudy:"O‘qish markazi", studyHeading:"Shaxsiy o‘qish boshqaruv paneli", studySub:"Mashg‘ulotni rejalashtiring, taymer bilan fokus qiling, kartochkalarni takrorlang va tezkor qaydlar yozing — barchasi brauzerda saqlanadi.", goalTitle:"Bugungi maqsad", goalPh:"Bugun nimaga erishmoqchisiz?", saveGoal:"Maqsadni saqlash", completeStep:"Bir qadamni yakunlash", focusTitle:"Fokus taymeri", reviewTitle:"Aqlli takrorlash", reviewSub:"Qiyin so‘zlarni tezkor takrorlash uchun saqlang. Xato qilingan kartalar tezroq qaytadi.", notesTitle:"Tezkor qaydlar", notesPh:"Formula, eslatma, savol yoki takrorlash kerak bo‘lgan narsalarni yozing...", planTitle:"O‘qish rejasini tuzish", authNotConfigured:"Google orqali kirish hali serverda sozlanmagan. Server muhitiga GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET va GOOGLE_REDIRECT_URI qo‘shing.", authUnavailable:"Google orqali kirishni boshlab bo‘lmadi. Server sozlamalarini tekshiring.", navPricing:"Tariflar"
-},
-ru:{
-  brandName:"Академия Nexora",
-  navHome:"Главная", navLang:"Языки", navCode:"Веб-разработка", navStem:"Математика и физика", navAi:"Assistant",
-  eyebrowHome:"Учебная сеть · онлайн",
-  homeTitle:"Изучайте языки, программирование и науку — всё в одной орбите.",
-  homeSub:"Уроки английского, узбекского и русского, лаборатория программирования, математика и физика — с тестами и Assistant.",
-  ctaStart:"Начать обучение", ctaTutor:"Спросить Assistant",
-  orbitCore:"EN · UZ · RU<br>+ КОД + НАУКА",
-  progressTitle:"Ваш прогресс",
-  c1Title:"🌐 Языковая лаборатория", c1Desc:"30 базовых слов на английском, узбекском и русском, три уровня сложности и мгновенные тесты.",
-  c2Title:"💻 Full-Stack лаборатория", c2Desc:"24 урока по Frontend и Backend, живая консоль JavaScript и тесты на понимание.",
-  c3Title:"⚛️ Математика и физика", c3Desc:"20 тем от алгебры до квантовой физики с объяснением формул и тестами.",
-  btnOpen:"Открыть",
-  honestNote:"Важно: Assistant работает двумя способами. Без какой-либо настройки он работает как офлайн-репетитор по ключевым словам и урокам прямо в браузере. Если запущен server.py с GROQ_API_KEY, он обращается к настоящей языковой модели через ваш собственный бэкенд — ключ никогда не попадает в браузер.",
-  eyebrowLang:"Языковая лаборатория", langHeading:"Словарь и тесты", langSub:"Выберите язык для изучения, затем уровень.",
-  learnLangLabel:"Изучаю:", quizLabel:"Тест по словарю", nextQ:"Следующий вопрос",
-  levelAll:"Все уровни", lvl1:"Начальный", lvl2:"Средний", lvl3:"Продвинутый",
-  eyebrowCode:"Full-stack лаборатория", codeHeading:"Уроки Frontend и Backend", codeSub:"Откройте урок, отметьте пройденным, затем попробуйте в живой консоли ниже.",
-  trackAll:"Все направления", trackFront:"Frontend", trackBack:"Backend",
-  consoleTitle:"Живая консоль JavaScript", consoleSub:"Напишите JavaScript и запустите — код выполняется безопасно внутри страницы.",
-  runCode:"Запустить код", outputPlaceholder:"Результат появится здесь…", conceptQuiz:"Проверка понимания",
-  eyebrowStem:"Математика и физика", stemHeading:"Формулы и понятия", stemSub:"От порядка действий до квантовой физики.",
-  subjAll:"Все предметы", subjMath:"Математика", subjPhysics:"Физика",
-  eyebrowAi:"Учебный помощник", aiHeading:"Assistant", aiSub:'Спросите о словах, программировании или математике-физике. Например: "что значит алгоритм" или "объясни законы Ньютона".',
-  chatPh:"Спросите Assistant…", send:"Отправить",
-  aiNote:"Этот помощник сначала обращается к настоящей AI-модели через собственный бэкенд сайта /api/chat (server.py), который хранит ключ Groq API на сервере, а не в браузере. Если бэкенд не запущен или ключ не настроен, помощник автоматически переключается на офлайн-репетитор на основе уроков и словаря сайта.",
-  footerText:"Академия Nexora — для изучения EN · UZ · RU, программирования и точных наук. Откройте этот файл в любом браузере, редактируйте.",
-  markDone:"Отметить пройденным", done:"Пройдено ✓",
-  correct:"Верно!", incorrect:"Не совсем.",
-  greet:"Привет! Я ваш Assistant. Спросите меня о словах, программировании или математике-физике — например: \"что значит технология\", \"объясни flexbox\" или \"что такое второй закон Ньютона\".",
-  loginTitle:"Войдите, чтобы начать обучение", loginSub:"Создайте бесплатный аккаунт, чтобы сохранять прогресс и общаться с Assistant.", loginBtn:"Войти через Google",
-  upgradeTitle:"Вы достигли дневного лимита", upgradeCta:"Посмотреть тарифы", upgradeClose:"Не сейчас",
-  eyebrowPricing:"Тарифы", pricingHeading:"Выберите тариф", pricingSub:"Каждый тариф включает все уроки, тесты и живую консоль кода. Платные тарифы увеличивают дневной лимит Assistant и открывают более мощную модель ИИ.",
-  signOut:"Выйти", currentPlan:"Текущий тариф", manageBilling:"Управление подпиской", perMonth:"/мес", upgradeBtn:"Улучшить", freeBtn:"Начать",
-   eyebrowStudy:"Учебный центр", studyHeading:"Ваш личный учебный центр", studySub:"Планируйте занятие, работайте по таймеру, повторяйте карточки и делайте заметки — всё хранится локально в браузере.", goalTitle:"Цель на сегодня", goalPh:"Чего вы хотите добиться сегодня?", saveGoal:"Сохранить цель", completeStep:"Завершить шаг", focusTitle:"Таймер фокуса", reviewTitle:"Умное повторение", reviewSub:"Сохраняйте сложные слова для быстрого повторения. Ошибочные карточки возвращаются раньше.", notesTitle:"Быстрые заметки", notesPh:"Запишите формулы, напоминания, вопросы или темы для повторения...", planTitle:"Создать учебный план", authNotConfigured:"Вход через Google ещё не настроен на сервере. Добавьте GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET и GOOGLE_REDIRECT_URI в окружение сервера.", authUnavailable:"Не удалось запустить вход через Google. Проверьте конфигурацию сервера.", navPricing:"Тарифы"
-}
-};
-let LANG = localStorage.getItem('nexora_ui_lang') || 'en';
-
-/* ============================= DATA ============================= */
-const VOCAB = [
- {id:1,level:1,en:"hello",uz:"salom",ru:"привет"},
- {id:2,level:1,en:"water",uz:"suv",ru:"вода"},
- {id:3,level:1,en:"friend",uz:"do'st",ru:"друг"},
- {id:4,level:1,en:"house",uz:"uy",ru:"дом"},
- {id:5,level:1,en:"book",uz:"kitob",ru:"книга"},
- {id:6,level:1,en:"name",uz:"ism",ru:"имя"},
- {id:7,level:1,en:"food",uz:"ovqat",ru:"еда"},
- {id:8,level:1,en:"school",uz:"maktab",ru:"школа"},
- {id:9,level:1,en:"family",uz:"oila",ru:"семья"},
- {id:10,level:1,en:"time",uz:"vaqt",ru:"время"},
- {id:11,level:2,en:"knowledge",uz:"bilim",ru:"знание"},
- {id:12,level:2,en:"opportunity",uz:"imkoniyat",ru:"возможность"},
- {id:13,level:2,en:"decision",uz:"qaror",ru:"решение"},
- {id:14,level:2,en:"experience",uz:"tajriba",ru:"опыт"},
- {id:15,level:2,en:"environment",uz:"atrof-muhit",ru:"окружающая среда"},
- {id:16,level:2,en:"government",uz:"hukumat",ru:"правительство"},
- {id:17,level:2,en:"economy",uz:"iqtisodiyot",ru:"экономика"},
- {id:18,level:2,en:"education",uz:"ta'lim",ru:"образование"},
- {id:19,level:2,en:"technology",uz:"texnologiya",ru:"технология"},
- {id:20,level:2,en:"language",uz:"til",ru:"язык"},
- {id:21,level:3,en:"algorithm",uz:"algoritm",ru:"алгоритм"},
- {id:22,level:3,en:"sustainability",uz:"barqarorlik",ru:"устойчивость"},
- {id:23,level:3,en:"negotiation",uz:"muzokara",ru:"переговоры"},
- {id:24,level:3,en:"infrastructure",uz:"infratuzilma",ru:"инфраструктура"},
- {id:25,level:3,en:"philosophy",uz:"falsafa",ru:"философия"},
- {id:26,level:3,en:"entrepreneurship",uz:"tadbirkorlik",ru:"предпринимательство"},
- {id:27,level:3,en:"consciousness",uz:"ong",ru:"сознание"},
- {id:28,level:3,en:"diplomacy",uz:"diplomatiya",ru:"дипломатия"},
- {id:29,level:3,en:"hypothesis",uz:"gipoteza",ru:"гипотеза"},
- {id:30,level:3,en:"paradigm",uz:"paradigma",ru:"парадигма"}
-];
-
-const CODING_LESSONS = [
- {id:'c1',track:'frontend',level:1,title:{en:"HTML Basics",uz:"HTML asoslari",ru:"Основы HTML"},body:{en:"HTML defines the structure of a page using tags like <h1>, <p> and <div>. Every page starts with <!DOCTYPE html> and a <html> root element.",uz:"HTML sahifa tuzilishini <h1>, <p>, <div> kabi teglar yordamida belgilaydi. Har bir sahifa <!DOCTYPE html> va <html> ildiz elementi bilan boshlanadi.",ru:"HTML определяет структуру страницы с помощью тегов <h1>, <p>, <div>. Каждая страница начинается с <!DOCTYPE html> и корневого элемента <html>."}},
- {id:'c2',track:'frontend',level:1,title:{en:"CSS Basics",uz:"CSS asoslari",ru:"Основы CSS"},body:{en:"CSS styles HTML elements: color, size, spacing. Selectors target elements, and properties like color or margin change how they look.",uz:"CSS HTML elementlarini bezaydi: rang, o'lcham, boshliq. Selektorlar elementlarni tanlaydi, color yoki margin kabi xususiyatlar ko'rinishini o'zgartiradi.",ru:"CSS оформляет элементы HTML: цвет, размер, отступы. Селекторы выбирают элементы, а свойства вроде color или margin меняют их вид."}},
- {id:'c3',track:'frontend',level:1,title:{en:"Text & Images",uz:"Matn va rasmlar",ru:"Текст и изображения"},body:{en:"Headings (<h1>-<h6>) and paragraphs (<p>) hold text; <img src='...' alt='...'> embeds images. The alt text matters for accessibility.",uz:"Sarlavhalar (<h1>-<h6>) va paragraflar (<p>) matnni saqlaydi; <img src='...' alt='...'> rasmlarni joylashtiradi. Alt matni qulaylik uchun muhim.",ru:"Заголовки (<h1>-<h6>) и абзацы (<p>) содержат текст; <img src='...' alt='...'> вставляет изображения. Текст alt важен для доступности."}},
- {id:'c4',track:'frontend',level:1,title:{en:"Links & Lists",uz:"Havolalar va ro'yxatlar",ru:"Ссылки и списки"},body:{en:"<a href='url'> creates a clickable link. <ul> makes a bulleted list and <ol> a numbered one, each item wrapped in <li>.",uz:"<a href='url'> bosiladigan havola yaratadi. <ul> nuqtali ro'yxat, <ol> raqamli ro'yxat hosil qiladi, har bir band <li> ichida bo'ladi.",ru:"<a href='url'> создаёт кликабельную ссылку. <ul> — маркированный список, <ol> — нумерованный, каждый пункт в <li>."}},
- {id:'c5',track:'frontend',level:2,title:{en:"CSS Layout: Flexbox",uz:"CSS Layout: Flexbox",ru:"CSS-раскладка: Flexbox"},body:{en:"display:flex turns a container into a flexible row or column. justify-content aligns items along the main axis, align-items along the cross axis.",uz:"display:flex konteynerni moslashuvchan qator yoki ustunga aylantiradi. justify-content asosiy o'q bo'ylab, align-items ko'ndalang o'q bo'ylab tekislaydi.",ru:"display:flex превращает контейнер в гибкую строку или колонку. justify-content выравнивает по главной оси, align-items — по поперечной."}},
- {id:'c6',track:'frontend',level:2,title:{en:"JavaScript Basics",uz:"JavaScript asoslari",ru:"Основы JavaScript"},body:{en:"Variables (let, const), functions, and conditionals (if/else) let JavaScript make pages interactive and react to input.",uz:"O'zgaruvchilar (let, const), funksiyalar va shartlar (if/else) JavaScript'ga sahifalarni interaktiv qilish va kirishga javob berish imkonini beradi.",ru:"Переменные (let, const), функции и условия (if/else) позволяют JavaScript делать страницы интерактивными и реагировать на ввод."}},
- {id:'c7',track:'frontend',level:2,title:{en:"DOM Manipulation",uz:"DOM bilan ishlash",ru:"Работа с DOM"},body:{en:"document.getElementById / querySelector find elements; .innerText, .style and .classList let JavaScript change them live.",uz:"document.getElementById / querySelector elementlarni topadi; .innerText, .style va .classList JavaScript'ga ularni jonli o'zgartirish imkonini beradi.",ru:"document.getElementById / querySelector находят элементы; .innerText, .style и .classList позволяют JavaScript изменять их в реальном времени."}},
- {id:'c8',track:'frontend',level:2,title:{en:"Forms & Events",uz:"Formalar va hodisalar",ru:"Формы и события"},body:{en:"Forms collect user input; addEventListener('click', fn) or 'submit' runs code in response, without a page reload.",uz:"Formalar foydalanuvchi kiritishini yig'adi; addEventListener('click', fn) yoki 'submit' sahifani qayta yuklamasdan kodni ishga tushiradi.",ru:"Формы собирают ввод пользователя; addEventListener('click', fn) или 'submit' запускает код в ответ без перезагрузки страницы."}},
- {id:'c9',track:'frontend',level:3,title:{en:"Responsive Design",uz:"Moslashuvchan dizayn",ru:"Адаптивный дизайн"},body:{en:"Media queries (@media (max-width: 600px)) and flexible units (%, rem, fr) make a layout adapt to any screen size.",uz:"Media so'rovlar (@media (max-width: 600px)) va moslashuvchan birliklar (%, rem, fr) layoutni har qanday ekran o'lchamiga moslaydi.",ru:"Медиазапросы (@media (max-width: 600px)) и гибкие единицы (%, rem, fr) адаптируют раскладку под любой экран."}},
- {id:'c10',track:'frontend',level:3,title:{en:"Async JS & Fetch",uz:"Async JS va Fetch",ru:"Асинхронный JS и Fetch"},body:{en:"fetch() requests data from a server and returns a Promise; async/await makes that asynchronous code read top-to-bottom.",uz:"fetch() serverdan ma'lumot so'raydi va Promise qaytaradi; async/await bu asinxron kodni yuqoridan pastga o'qishni osonlashtiradi.",ru:"fetch() запрашивает данные с сервера и возвращает Promise; async/await делает этот асинхронный код читаемым сверху вниз."}},
- {id:'c11',track:'frontend',level:3,title:{en:"Frontend Frameworks",uz:"Frontend freymvorklari",ru:"Frontend-фреймворки"},body:{en:"Frameworks like React or Vue let you build UIs from reusable components that manage their own state and re-render when it changes.",uz:"React yoki Vue kabi freymvorklar o'z holatini boshqaradigan va o'zgarganda qayta chizadigan qayta ishlatiluvchi komponentlardan UI qurish imkonini beradi.",ru:"Фреймворки вроде React или Vue позволяют строить интерфейс из переиспользуемых компонентов, которые управляют своим состоянием и перерисовываются при его изменении."}},
- {id:'c12',track:'frontend',level:3,title:{en:"Web Performance & Accessibility",uz:"Tezlik va qulaylik",ru:"Производительность и доступность"},body:{en:"Compressing images, lazy-loading, semantic HTML and good color contrast make sites fast for everyone and usable with screen readers.",uz:"Rasmlarni siqish, lazy-loading, semantik HTML va yaxshi rang kontrasti saytlarni hammaga tez va ekran o'quvchilari uchun qulay qiladi.",ru:"Сжатие изображений, ленивая загрузка, семантический HTML и хороший контраст делают сайт быстрым для всех и удобным для скринридеров."}},
- {id:'c13',track:'backend',level:1,title:{en:"What is a Server?",uz:"Server nima?",ru:"Что такое сервер?"},body:{en:"A server is a program that listens for requests (from a browser or app) and sends back responses — usually HTML, JSON, or files.",uz:"Server — bu so'rovlarni (brauzer yoki ilovadan) kutib turadigan va javob qaytaradigan dastur — odatda HTML, JSON yoki fayllar.",ru:"Сервер — это программа, которая слушает запросы (от браузера или приложения) и отправляет ответы — обычно HTML, JSON или файлы."}},
- {id:'c14',track:'backend',level:1,title:{en:"Intro to Node.js",uz:"Node.js'ga kirish",ru:"Введение в Node.js"},body:{en:"Node.js runs JavaScript outside the browser, so the same language can power both the frontend and the backend of an app.",uz:"Node.js JavaScript'ni brauzerdan tashqarida ishga tushiradi, shuning uchun bitta til ilovaning ham frontend, ham backend qismini boshqarishi mumkin.",ru:"Node.js запускает JavaScript вне браузера, поэтому один язык может работать и на фронтенде, и на бэкенде приложения."}},
- {id:'c15',track:'backend',level:1,title:{en:"HTTP Requests & Responses",uz:"HTTP so'rov va javoblar",ru:"HTTP-запросы и ответы"},body:{en:"Browsers send methods like GET (read) and POST (create) to a URL; the server replies with a status code (200 OK, 404 Not Found) and a body.",uz:"Brauzerlar URL manziliga GET (o'qish) va POST (yaratish) kabi metodlarni yuboradi; server holat kodi (200 OK, 404 Not Found) va tanasi bilan javob beradi.",ru:"Браузеры отправляют методы вроде GET (чтение) и POST (создание) на URL; сервер отвечает кодом состояния (200 OK, 404 Not Found) и телом ответа."}},
- {id:'c16',track:'backend',level:1,title:{en:"JSON Basics",uz:"JSON asoslari",ru:"Основы JSON"},body:{en:"JSON stores data as key-value pairs, like {\"name\":\"Aura\"}. It's the standard format servers and apps use to exchange data.",uz:"JSON ma'lumotlarni kalit-qiymat juftliklari sifatida saqlaydi, masalan {\"name\":\"Aura\"}. Bu server va ilovalar ma'lumot almashadigan standart format.",ru:"JSON хранит данные как пары ключ-значение, например {\"name\":\"Aura\"}. Это стандартный формат обмена данными между серверами и приложениями."}},
- {id:'c17',track:'backend',level:2,title:{en:"Express.js Routing",uz:"Express.js marshrutlash",ru:"Маршрутизация Express.js"},body:{en:"Express lets you define routes like app.get('/users', handler) so different URLs run different code on the server.",uz:"Express app.get('/users', handler) kabi marshrutlarni belgilash imkonini beradi, shunda turli URL'lar serverda turli kodni ishga tushiradi.",ru:"Express позволяет задавать маршруты вроде app.get('/users', handler), чтобы разные URL запускали разный код на сервере."}},
- {id:'c18',track:'backend',level:2,title:{en:"REST APIs",uz:"REST API'lar",ru:"REST API"},body:{en:"A REST API exposes resources (like /books) with consistent verbs: GET to read, POST to create, PUT to update, DELETE to remove.",uz:"REST API resurslarni (masalan /books) izchil fe'llar bilan ochadi: GET o'qish, POST yaratish, PUT yangilash, DELETE o'chirish uchun.",ru:"REST API открывает ресурсы (например /books) с постоянными методами: GET — читать, POST — создать, PUT — обновить, DELETE — удалить."}},
- {id:'c19',track:'backend',level:2,title:{en:"Databases (SQL basics)",uz:"Ma'lumotlar bazasi (SQL asoslari)",ru:"Базы данных (основы SQL)"},body:{en:"SQL databases store data in tables with rows and columns. SELECT * FROM users retrieves data; WHERE filters it.",uz:"SQL bazalari ma'lumotlarni qator va ustunli jadvallarda saqlaydi. SELECT * FROM users ma'lumotni oladi; WHERE uni filtrlaydi.",ru:"SQL-базы хранят данные в таблицах со строками и столбцами. SELECT * FROM users получает данные; WHERE их фильтрует."}},
- {id:'c20',track:'backend',level:2,title:{en:"Environment & Config",uz:"Muhit va sozlamalar",ru:"Окружение и конфигурация"},body:{en:"Environment variables (like API keys) are kept out of the code itself, in a .env file, so secrets aren't shared or committed by accident.",uz:"Muhit o'zgaruvchilari (masalan API kalitlari) kodning o'zida emas, .env faylida saqlanadi, shunda maxfiy ma'lumotlar tasodifan oshkor bo'lmaydi.",ru:"Переменные окружения (например API-ключи) хранятся не в самом коде, а в файле .env, чтобы секреты случайно не попали в код."}},
- {id:'c21',track:'backend',level:3,title:{en:"Authentication & Security",uz:"Autentifikatsiya va xavfsizlik",ru:"Аутентификация и безопасность"},body:{en:"Passwords are hashed (never stored as plain text); tokens (like JWT) prove who a user is on later requests without resending a password.",uz:"Parollar heshlanadi (hech qachon oddiy matn sifatida saqlanmaydi); tokenlar (masalan JWT) keyingi so'rovlarda parolni qayta yubormasdan foydalanuvchini tasdiqlaydi.",ru:"Пароли хешируются (никогда не хранятся как обычный текст); токены (например JWT) подтверждают личность пользователя в следующих запросах без повторной отправки пароля."}},
- {id:'c22',track:'backend',level:3,title:{en:"NoSQL & MongoDB",uz:"NoSQL va MongoDB",ru:"NoSQL и MongoDB"},body:{en:"NoSQL databases like MongoDB store flexible JSON-like documents instead of fixed tables, which suits fast-changing data shapes.",uz:"MongoDB kabi NoSQL bazalari qat'iy jadvallar o'rniga moslashuvchan JSON-ga o'xshash hujjatlarni saqlaydi, bu tez o'zgaruvchan ma'lumotlarga mos keladi.",ru:"NoSQL-базы вроде MongoDB хранят гибкие JSON-подобные документы вместо жёстких таблиц, что удобно для быстро меняющихся данных."}},
- {id:'c23',track:'backend',level:3,title:{en:"Caching & Performance",uz:"Kesh va tezlik",ru:"Кэширование и производительность"},body:{en:"Caching (like Redis) stores frequent results in fast memory so the server doesn't repeat expensive work for every request.",uz:"Kesh (masalan Redis) tez-tez ishlatiladigan natijalarni tezkor xotirada saqlaydi, shunda server har bir so'rov uchun qimmat ishni takrorlamaydi.",ru:"Кэширование (например Redis) хранит частые результаты в быстрой памяти, чтобы сервер не повторял дорогую работу для каждого запроса."}},
- {id:'c24',track:'backend',level:3,title:{en:"Deploying an App",uz:"Ilovani joylashtirish",ru:"Развёртывание приложения"},body:{en:"Deploying moves code from your computer to a server the public can reach (e.g. via a host like Render, Vercel, or a cloud provider).",uz:"Joylashtirish kodni kompyuteringizdan hammabop serverga ko'chiradi (masalan Render, Vercel yoki bulutli provayder orqali).",ru:"Развёртывание переносит код с вашего компьютера на публично доступный сервер (например через Render, Vercel или облачного провайдера)."}}
-];
-
-const STEM_LESSONS = [
- {id:'m1',subject:'math',level:1,title:{en:"Order of Operations",uz:"Amallar tartibi",ru:"Порядок действий"},formula:"PEMDAS: ( ) → ^ → × ÷ → + −",body:{en:"Solve parentheses first, then exponents, then multiplication/division left to right, then addition/subtraction left to right.",uz:"Avval qavslar, keyin darajalar, keyin ko'paytirish/bo'lish (chapdan o'ngga), keyin qo'shish/ayirish (chapdan o'ngga) hal qilinadi.",ru:"Сначала скобки, затем степени, затем умножение/деление слева направо, затем сложение/вычитание слева направо."}},
- {id:'m2',subject:'math',level:1,title:{en:"Fractions & Percentages",uz:"Kasrlar va foizlar",ru:"Дроби и проценты"},formula:"% = (part / whole) × 100",body:{en:"A fraction is part of a whole; a percentage expresses that same part out of 100. 1/2 = 50%.",uz:"Kasr — butunning bir qismi; foiz esa shu qismni 100 dan iborat qilib ifodalaydi. 1/2 = 50%.",ru:"Дробь — часть целого; процент выражает ту же часть из 100. 1/2 = 50%."}},
- {id:'m3',subject:'math',level:1,title:{en:"Linear Equations",uz:"Chiziqli tenglamalar",ru:"Линейные уравнения"},formula:"y = mx + b",body:{en:"A linear equation graphs as a straight line; m is the slope (steepness) and b is where it crosses the y-axis.",uz:"Chiziqli tenglama grafikda to'g'ri chiziq hosil qiladi; m — qiya (tikligi), b esa y o'qini kesib o'tish nuqtasi.",ru:"Линейное уравнение на графике — прямая линия; m — наклон, b — точка пересечения с осью y."}},
- {id:'m4',subject:'math',level:1,title:{en:"Basic Geometry",uz:"Geometriya asoslari",ru:"Основы геометрии"},formula:"Area of circle = πr²",body:{en:"Geometry studies shapes: perimeter is the distance around a shape, area is the space it covers.",uz:"Geometriya shakllarni o'rganadi: perimetr shakl atrofidagi masofa, yuza esa u egallagan bo'shliq.",ru:"Геометрия изучает фигуры: периметр — расстояние по контуру фигуры, площадь — занимаемое ею пространство."}},
- {id:'m5',subject:'math',level:2,title:{en:"Quadratic Equations",uz:"Kvadrat tenglamalar",ru:"Квадратные уравнения"},formula:"x = (−b ± √(b²−4ac)) / 2a",body:{en:"A quadratic equation (ax²+bx+c=0) graphs as a parabola; the quadratic formula finds its roots (where it crosses zero).",uz:"Kvadrat tenglama (ax²+bx+c=0) grafikda parabola hosil qiladi; kvadrat formula uning ildizlarini (nolga tenglashgan nuqtalarni) topadi.",ru:"Квадратное уравнение (ax²+bx+c=0) на графике — парабола; формула корней находит его корни (точки пересечения с нулём)."}},
- {id:'m6',subject:'math',level:2,title:{en:"Functions & Graphs",uz:"Funksiya va grafiklar",ru:"Функции и графики"},formula:"f(x) → one output per input",body:{en:"A function maps each input to exactly one output; its graph shows how the output changes as the input changes.",uz:"Funksiya har bir kirish qiymatiga aynan bitta chiqish qiymatini mos qo'yadi; grafik esa kirish o'zgarganda chiqish qanday o'zgarishini ko'rsatadi.",ru:"Функция сопоставляет каждому входу ровно один выход; график показывает, как выход меняется при изменении входа."}},
- {id:'m7',subject:'math',level:2,title:{en:"Trigonometry Basics",uz:"Trigonometriya asoslari",ru:"Основы тригонометрии"},formula:"sin θ = opposite / hypotenuse",body:{en:"Trigonometry relates a right triangle's angles to its side ratios: sine, cosine, and tangent.",uz:"Trigonometriya to'g'ri burchakli uchburchak burchaklarini uning tomonlari nisbati bilan bog'laydi: sinus, kosinus, tangens.",ru:"Тригонометрия связывает углы прямоугольного треугольника с отношениями его сторон: синус, косинус, тангенс."}},
- {id:'m8',subject:'math',level:2,title:{en:"Exponents & Logarithms",uz:"Daraja va logarifm",ru:"Степени и логарифмы"},formula:"log_b(bˣ) = x",body:{en:"Exponents show repeated multiplication (2³=8); a logarithm answers 'what power gives this number?' — its inverse.",uz:"Daraja takroriy ko'paytirishni bildiradi (2³=8); logarifm esa 'qaysi daraja bu songa teng?' savoliga javob beradi — bu daraja teskarisi.",ru:"Степень — это повторное умножение (2³=8); логарифм отвечает на вопрос «какая степень даёт это число?» — это обратная операция."}},
- {id:'m9',subject:'math',level:3,title:{en:"Derivatives (Calculus)",uz:"Hosila (Analiz)",ru:"Производные (матанализ)"},formula:"f'(x) = lim(h→0) [f(x+h)−f(x)] / h",body:{en:"A derivative measures the instantaneous rate of change of a function — how steep its graph is at each point.",uz:"Hosila funksiyaning har bir nuqtadagi lahzalik o'zgarish tezligini o'lchaydi — grafik qanchalik tik ekanligini.",ru:"Производная измеряет мгновенную скорость изменения функции — насколько круто идёт график в каждой точке."}},
- {id:'m10',subject:'math',level:3,title:{en:"Integrals (Calculus)",uz:"Integral (Analiz)",ru:"Интегралы (матанализ)"},formula:"∫ f(x) dx = area under the curve",body:{en:"An integral adds up infinitely many tiny pieces — most commonly used to find the area under a curve.",uz:"Integral cheksiz ko'p kichik bo'laklarni qo'shadi — ko'pincha egri chiziq ostidagi yuzani topish uchun ishlatiladi.",ru:"Интеграл суммирует бесконечно много крошечных частей — чаще всего используется для нахождения площади под кривой."}},
- {id:'p1',subject:'physics',level:1,title:{en:"Units & Measurement",uz:"Birliklar va o'lchash",ru:"Единицы и измерения"},formula:"SI: m, kg, s, A, K, mol, cd",body:{en:"Physics measures the world in standard SI units — meters for length, kilograms for mass, seconds for time.",uz:"Fizika dunyoni standart SI birliklarida o'lchaydi — uzunlik uchun metr, massa uchun kilogramm, vaqt uchun sekund.",ru:"Физика измеряет мир в стандартных единицах СИ — метры для длины, килограммы для массы, секунды для времени."}},
- {id:'p2',subject:'physics',level:1,title:{en:"Motion & Speed",uz:"Harakat va tezlik",ru:"Движение и скорость"},formula:"v = d / t",body:{en:"Speed is distance travelled divided by time taken; velocity adds direction to that same idea.",uz:"Tezlik — bosib o'tilgan masofani sarflangan vaqtga bo'lish; yo'nalishli tezlik esa shu tushunchaga yo'nalishni qo'shadi.",ru:"Скорость — пройденное расстояние, делённое на затраченное время; скорость с направлением — это векторная величина."}},
- {id:'p3',subject:'physics',level:1,title:{en:"Newton's Laws",uz:"Nyuton qonunlari",ru:"Законы Ньютона"},formula:"F = m × a",body:{en:"An object stays at rest or in motion unless acted on by a force (1st law); force equals mass times acceleration (2nd law).",uz:"Jism kuch ta'sir etmaguncha tinch holatda yoki harakatda qoladi (1-qonun); kuch massa va tezlanish ko'paytmasiga teng (2-qonun).",ru:"Тело сохраняет покой или движение, пока на него не подействует сила (1-й закон); сила равна массе, умноженной на ускорение (2-й закон)."}},
- {id:'p4',subject:'physics',level:1,title:{en:"Energy & Work",uz:"Energiya va ish",ru:"Энергия и работа"},formula:"W = F × d",body:{en:"Work is force applied over a distance; energy is the capacity to do work, and it's never created or destroyed, only transferred.",uz:"Ish — masofada qo'llangan kuch; energiya — ish bajarish qobiliyati, u hech qachon yo'q bo'lmaydi, faqat bir shakldan ikkinchisiga o'tadi.",ru:"Работа — сила, приложенная на расстоянии; энергия — способность совершать работу, она не создаётся и не исчезает, а только переходит."}},
- {id:'p5',subject:'physics',level:2,title:{en:"Momentum",uz:"Impuls",ru:"Импульс"},formula:"p = m × v",body:{en:"Momentum is mass times velocity; in any closed system, total momentum before a collision equals total momentum after.",uz:"Impuls massa va tezlik ko'paytmasi; yopiq tizimda to'qnashuvdan oldingi umumiy impuls to'qnashuvdan keyingisiga teng.",ru:"Импульс — масса, умноженная на скорость; в замкнутой системе суммарный импульс до столкновения равен импульсу после."}},
- {id:'p6',subject:'physics',level:2,title:{en:"Waves & Sound",uz:"To'lqin va tovush",ru:"Волны и звук"},formula:"v = f × λ",body:{en:"A wave's speed equals its frequency times its wavelength; sound is a wave that travels through air by compressing it.",uz:"To'lqin tezligi uning chastotasi va to'lqin uzunligi ko'paytmasiga teng; tovush esa havoni siqib o'tuvchi to'lqin.",ru:"Скорость волны равна её частоте, умноженной на длину волны; звук — это волна, распространяющаяся по воздуху за счёт сжатия."}},
- {id:'p7',subject:'physics',level:2,title:{en:"Electricity Basics",uz:"Elektr asoslari",ru:"Основы электричества"},formula:"I = Q / t",body:{en:"Electric current is the flow of charge over time; voltage is what pushes that charge through a circuit.",uz:"Elektr toki — vaqt davomida zaryad oqimi; kuchlanish esa shu zaryadni sxema orqali haydab yuboradi.",ru:"Электрический ток — это поток заряда во времени; напряжение — то, что толкает этот заряд по цепи."}},
- {id:'p8',subject:'physics',level:2,title:{en:"Circuits (Ohm's Law)",uz:"Sxemalar (Om qonuni)",ru:"Цепи (закон Ома)"},formula:"V = I × R",body:{en:"Ohm's law relates voltage, current and resistance: voltage equals current times resistance in a simple circuit.",uz:"Om qonuni kuchlanish, tok va qarshilikni bog'laydi: oddiy sxemada kuchlanish tok va qarshilik ko'paytmasiga teng.",ru:"Закон Ома связывает напряжение, ток и сопротивление: в простой цепи напряжение равно току, умноженному на сопротивление."}},
- {id:'p9',subject:'physics',level:3,title:{en:"Electromagnetism",uz:"Elektromagnetizm",ru:"Электромагнетизм"},formula:"F = qE + qv×B",body:{en:"Moving electric charges create magnetic fields, and changing magnetic fields create electric fields — the two are deeply linked.",uz:"Harakatlanuvchi elektr zaryadlari magnit maydon hosil qiladi, o'zgaruvchan magnit maydon esa elektr maydon hosil qiladi — ular chambarchas bog'liq.",ru:"Движущиеся электрические заряды создают магнитные поля, а изменяющиеся магнитные поля создают электрические — они тесно связаны."}},
- {id:'p10',subject:'physics',level:3,title:{en:"Quantum Physics Intro",uz:"Kvant fizikasiga kirish",ru:"Введение в квантовую физику"},formula:"E = h × f",body:{en:"At very small scales, energy comes in discrete packets (quanta) and particles like electrons show both wave and particle behavior.",uz:"Juda kichik masshtablarda energiya alohida bo'laklar (kvantlar) shaklida bo'ladi, elektron kabi zarralar ham to'lqin, ham zarracha xossalarini namoyon qiladi.",ru:"На очень малых масштабах энергия существует дискретными порциями (квантами), а частицы вроде электронов проявляют свойства и волны, и частицы."}}
-];
-
-/* ============================= STATE ============================= */
-let vocabLevel = 0; // 0 = all
-let vocabQueue = [];
-let vocabScore = {right:0,total:0};
-let codeLevel = 0, stemLevel = 0;
-let conceptScore = {coding:{right:0,total:0}, stem:{right:0,total:0}};
-let currentConceptQ = {};
-
-function loadProgress(){
-  try{ return JSON.parse(localStorage.getItem('nexora_progress')) || {done:{}}; }catch(e){ return {done:{}}; }
-}
-function saveProgress(p){ localStorage.setItem('nexora_progress', JSON.stringify(p)); }
-
-/* ============================= NAV ============================= */
-function switchTab(pageId, btn){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+pageId).classList.add('active');
-  if(btn) btn.classList.add('active');
-  else document.querySelector('.nav-btn[data-page="'+pageId+'"]')?.classList.add('active');
-}
-function switchTabById(id){ switchTab(id); window.scrollTo({top:0,behavior:'smooth'}); }
-
-/* ============================= I18N APPLY ============================= */
-function applyI18n(){
-  const t = UI[LANG];
-  document.documentElement.lang = LANG;
-  document.querySelectorAll('[data-i18n]').forEach(el=>{
-    const key = el.getAttribute('data-i18n');
-    if(t[key]!==undefined) el.innerHTML = t[key];
-  });
-  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
-    const key = el.getAttribute('data-i18n-ph');
-    if(t[key]!==undefined) el.setAttribute('placeholder', t[key]);
-  });
-  document.getElementById('nav-home') // no-op guard
-  const navMap = {home:'navHome',languages:'navLang',coding:'navCode',stem:'navStem',ai:'navAi',study:'studyHeading',pricing:'navPricing'};
-  document.querySelectorAll('.nav-btn').forEach(b=>{ b.innerText = t[navMap[b.dataset.page]]; });
-  document.getElementById('brandName').innerText = t.brandName;
-  document.getElementById('footerText').innerText = t.footerText;
-  buildLevelTabs('vocabLevelTabs', renderVocab, 'vocab');
-  buildLevelTabs('codeLevelTabs', ()=>renderLessons('coding'), 'code');
-  buildLevelTabs('stemLevelTabs', ()=>renderLessons('stem'), 'stem');
-  buildLearnLangSelect();
-  document.getElementById('trackSelect').options[0].text = t.trackAll;
-  document.getElementById('trackSelect').options[1].text = t.trackFront;
-  document.getElementById('trackSelect').options[2].text = t.trackBack;
-  document.getElementById('subjectSelect').options[0].text = t.subjAll;
-  document.getElementById('subjectSelect').options[1].text = t.subjMath;
-  document.getElementById('subjectSelect').options[2].text = t.subjPhysics;
-  renderVocab();
-  renderLessons('coding');
-  renderLessons('stem');
-  renderProgress();
-  renderChatSuggestions();
-}
-function setLang(l){ LANG = l; localStorage.setItem('nexora_ui_lang', l); applyI18n(); }
-
-function buildLevelTabs(containerId, onChange, scope){
-  const t = UI[LANG];
-  const el = document.getElementById(containerId);
-  const labels = [t.levelAll, t.lvl1, t.lvl2, t.lvl3];
-  let current = scope==='vocab'?vocabLevel:(scope==='code'?codeLevel:stemLevel);
-  el.innerHTML = labels.map((lab,i)=>`<button class="lvl-tab ${current===i?'active':''}" onclick="setLevel('${scope}',${i})">${lab}</button>`).join('');
-}
-function setLevel(scope, i){
-  if(scope==='vocab') vocabLevel=i;
-  if(scope==='code') codeLevel=i;
-  if(scope==='stem') stemLevel=i;
-  applyI18n();
-}
-function buildLearnLangSelect(){
-  const sel = document.getElementById('learnLangSelect');
-  const prev = sel.value || 'en';
-  const t = UI[LANG];
-  const names = {en:{en:'English',uz:'Ingliz tili',ru:'Английский'}, uz:{en:'Uzbek',uz:"O'zbek tili",ru:'Узбекский'}, ru:{en:'Russian',uz:'Rus tili',ru:'Русский'}};
-  sel.innerHTML = t.learnLangLabel + '###' + ['en','uz','ru'].map(code=>`<option value="${code}">${names[code][LANG]}</option>`).join('');
-  const parts = sel.innerHTML.split('###');
-  sel.innerHTML = parts[1];
-  sel.value = prev;
-}
-
-/* ============================= PROGRESS ============================= */
-function renderProgress(){
-  const t = UI[LANG];
-  const prog = loadProgress();
-  const codeDone = CODING_LESSONS.filter(l=>prog.done['coding_'+l.id]).length;
-  const stemDone = STEM_LESSONS.filter(l=>prog.done['stem_'+l.id]).length;
-  const vocabPct = vocabScore.total ? Math.round(100*vocabScore.right/vocabScore.total) : 0;
-  const items = [
-    {label:t.c1Title.replace(/^\S+\s/,''), val:vocabPct, sub:vocabScore.right+'/'+vocabScore.total, color:'var(--ring1)'},
-    {label:t.c2Title.replace(/^\S+\s/,''), val:Math.round(100*codeDone/CODING_LESSONS.length), sub:codeDone+'/'+CODING_LESSONS.length, color:'var(--ring2)'},
-    {label:t.c3Title.replace(/^\S+\s/,''), val:Math.round(100*stemDone/STEM_LESSONS.length), sub:stemDone+'/'+STEM_LESSONS.length, color:'var(--ring3)'}
-  ];
-  document.getElementById('progressStrip').innerHTML = items.map(it=>`
-    <div class="pring-card">
-      <div class="pring" style="background:conic-gradient(${it.color} ${it.val*3.6}deg, var(--line) 0deg)">
-        <div style="width:40px;height:40px;border-radius:50%;background:var(--panel);display:grid;place-items:center;">${it.val}%</div>
-      </div>
-      <div><div class="pring-title">${it.label}</div><div class="pring-label">${it.sub}</div></div>
-    </div>`).join('');
-}
-
-/* ============================= VOCAB ============================= */
-function renderVocab(){
-  const learn = document.getElementById('learnLangSelect').value || 'en';
-  const pool = VOCAB.filter(v=> vocabLevel===0 || v.level===vocabLevel);
-  const grid = document.getElementById('vocabGrid');
-  grid.innerHTML = pool.map(v=>`
-    <div class="vocab-card">
-      <span class="tag lvl-${v.level}">${UI[LANG]['lvl'+v.level]}</span>
-      <div class="vocab-word">${v[learn]}</div>
-      ${['en','uz','ru'].filter(c=>c!==learn).map(c=>`<div class="vocab-row"><span>${v[c]}</span><span>${c.toUpperCase()}</span></div>`).join('')}
-    </div>`).join('');
-  vocabQueue = [];
-  nextVocabQ();
-}
-function nextVocabQ(){
-  const learn = document.getElementById('learnLangSelect').value || 'en';
-  const pool = VOCAB.filter(v=> vocabLevel===0 || v.level===vocabLevel);
-  if(pool.length < 3){ document.getElementById('vocabQ').innerText='—'; document.getElementById('vocabOptions').innerHTML=''; return; }
-  const askIn = ['en','uz','ru'].filter(c=>c!==learn)[0]; // ask from a non-target language
-  const correct = pool[Math.floor(Math.random()*pool.length)];
-  let distractors = pool.filter(v=>v.id!==correct.id).sort(()=>Math.random()-.5).slice(0,3);
-  const options = [correct, ...distractors].sort(()=>Math.random()-.5);
-  document.getElementById('vocabQ').innerText = `"${correct[askIn]}" → ${document.getElementById('learnLangSelect').options[[...document.getElementById('learnLangSelect').options].findIndex(o=>o.value===learn)].text}?`;
-  document.getElementById('vocabOptions').innerHTML = options.map(o=>`<div class="quiz-option" onclick="answerVocab(this,${o.id===correct.id},'${o[learn].replace(/'/g,"\\'")}')">${o[learn]}</div>`).join('');
-  document.getElementById('vocabFeedback').innerText='';
-  document.getElementById('vocabScore').innerText = vocabScore.right+' / '+vocabScore.total;
-}
-function answerVocab(el, isCorrect){
-  const opts = document.querySelectorAll('#vocabOptions .quiz-option');
-  opts.forEach(o=>o.style.pointerEvents='none');
-  el.classList.add(isCorrect?'correct':'wrong');
-  vocabScore.total++; if(isCorrect) vocabScore.right++;
-  document.getElementById('vocabFeedback').innerText = isCorrect? UI[LANG].correct : UI[LANG].incorrect;
-  document.getElementById('vocabFeedback').style.color = isCorrect? 'var(--teal)':'var(--rose)';
-  document.getElementById('vocabScore').innerText = vocabScore.right+' / '+vocabScore.total;
-  renderProgress();
-}
-
-/* ============================= LESSONS ============================= */
-function toggleLesson(id){
-  const body = document.getElementById('body_'+id);
-  const chev = document.getElementById('chev_'+id);
-  body.classList.toggle('open'); chev.classList.toggle('open');
-}
-function toggleDone(key, btn){
-  const prog = loadProgress();
-  prog.done[key] = !prog.done[key];
-  saveProgress(prog);
-  btn.classList.toggle('done');
-  btn.innerText = prog.done[key] ? UI[LANG].done : UI[LANG].markDone;
-  renderProgress();
-}
-function renderLessons(scope){
-  const t = UI[LANG];
-  const prog = loadProgress();
-  if(scope==='coding'){
-    const track = document.getElementById('trackSelect').value;
-    const list = CODING_LESSONS.filter(l=>(track==='all'||l.track===track) && (codeLevel===0||l.level===codeLevel));
-    document.getElementById('codingLessons').innerHTML = list.map(l=>{
-      const key='coding_'+l.id, isDone = !!prog.done[key];
-      return `<div class="lesson">
-        <div class="lesson-head" onclick="toggleLesson('${l.id}')">
-          <div><span class="tag lvl-${l.level}">${t['lvl'+l.level]} · ${l.track==='frontend'?t.trackFront:t.trackBack}</span><div class="lesson-title">${l.title[LANG]}</div></div>
-          <span class="chev" id="chev_${l.id}">▶</span>
-        </div>
-        <div class="lesson-body" id="body_${l.id}">
-          <p>${l.body[LANG]}</p>
-          <button class="check-btn ${isDone?'done':''}" onclick="event.stopPropagation();toggleDone('${key}', this)">${isDone?t.done:t.markDone}</button>
-        </div>
-      </div>`;
-    }).join('') || `<p class="sub">—</p>`;
-    nextConceptQ('coding');
-  } else {
-    const subj = document.getElementById('subjectSelect').value;
-    const list = STEM_LESSONS.filter(l=>(subj==='all'||l.subject===subj) && (stemLevel===0||l.level===stemLevel));
-    document.getElementById('stemLessons').innerHTML = list.map(l=>{
-      const key='stem_'+l.id, isDone = !!prog.done[key];
-      return `<div class="lesson">
-        <div class="lesson-head" onclick="toggleLesson('${l.id}')">
-          <div><span class="tag lvl-${l.level}">${t['lvl'+l.level]} · ${l.subject==='math'?t.subjMath:t.subjPhysics}</span><div class="lesson-title">${l.title[LANG]}</div></div>
-          <span class="chev" id="chev_${l.id}">▶</span>
-        </div>
-        <div class="lesson-body" id="body_${l.id}">
-          <p style="font-family:var(--font-mono); color:var(--amber)">${l.formula}</p>
-          <p>${l.body[LANG]}</p>
-          <button class="check-btn ${isDone?'done':''}" onclick="event.stopPropagation();toggleDone('${key}', this)">${isDone?t.done:t.markDone}</button>
-        </div>
-      </div>`;
-    }).join('') || `<p class="sub">—</p>`;
-    nextConceptQ('stem');
-  }
-  renderProgress();
-}
-
-function nextConceptQ(scope){
-  const t = UI[LANG];
-  const source = scope==='coding' ? CODING_LESSONS : STEM_LESSONS;
-  if(source.length < 3) return;
-  const target = source[Math.floor(Math.random()*source.length)];
-  let pool = source.filter(l=>l.id!==target.id).sort(()=>Math.random()-.5).slice(0,2);
-  const options = [target, ...pool].sort(()=>Math.random()-.5);
-  currentConceptQ[scope] = target.id;
-  const qEl = document.getElementById(scope==='coding'?'codeQ':'stemQ');
-  const optEl = document.getElementById(scope==='coding'?'codeOptions':'stemOptions');
-  qEl.innerText = target.body[LANG];
-  optEl.innerHTML = options.map(o=>`<div class="quiz-option" onclick="answerConcept('${scope}',this,${o.id===target.id})">${o.title[LANG]}</div>`).join('');
-  document.getElementById(scope==='coding'?'codeFeedback':'stemFeedback').innerText='';
-  document.getElementById(scope==='coding'?'codeScore':'stemScore').innerText = conceptScore[scope].right+' / '+conceptScore[scope].total;
-}
-function answerConcept(scope, el, isCorrect){
-  const wrap = document.getElementById(scope==='coding'?'codeOptions':'stemOptions');
-  wrap.querySelectorAll('.quiz-option').forEach(o=>o.style.pointerEvents='none');
-  el.classList.add(isCorrect?'correct':'wrong');
-  conceptScore[scope].total++; if(isCorrect) conceptScore[scope].right++;
-  const fb = document.getElementById(scope==='coding'?'codeFeedback':'stemFeedback');
-  fb.innerText = isCorrect? UI[LANG].correct : UI[LANG].incorrect;
-  fb.style.color = isCorrect? 'var(--teal)':'var(--rose)';
-  document.getElementById(scope==='coding'?'codeScore':'stemScore').innerText = conceptScore[scope].right+' / '+conceptScore[scope].total;
-}
-
-/* ============================= CODE CONSOLE ============================= */
-function runCode(){
-  const code = document.getElementById('codeInput').value;
-  const out = document.getElementById('codeOutput');
-  try{
-    const logs = [];
-    const fakeConsole = { log:(...args)=>logs.push(args.map(a=> typeof a==='object'? JSON.stringify(a):String(a)).join(' ')) };
-    const run = new Function('console', code);
-    run(fakeConsole);
-    out.innerText = logs.length ? logs.join('\n') : UI[LANG].outputPlaceholder;
-  }catch(err){
-    out.innerText = 'Error: ' + err.message;
-  }
-}
-
-/* ============================= AI TUTOR ============================= */
-// The real model call happens server-side (see server.py) so no API key
-// ever reaches the browser. This page just talks to /api/chat. If that
-// endpoint isn't reachable (no server running, or GROQ_API_KEY not set),
-// everything falls back to the fully offline, rule-based tutor below —
-// the site keeps working either way.
-const NEXORA_AI_CONFIG = {
-  endpoint: '/api/chat',
-  healthEndpoint: '/api/health',
-  timeoutMs: 30000,
-  maxHistory: 12,
-  maxContextChars: 9000
-};
-const CHAT_STORAGE_KEY = 'nexora_chat_v1';
-const aiState = {history:[], busy:false, controller:null, serverAvailable:null};
-
-function renderChatSuggestions(){
-  const sugg={
-    en:["what does technology mean","explain flexbox","what is Newton's second law","help me study fractions"],
-    uz:["texnologiya nima","flexbox nima","Nyutonning ikkinchi qonuni nima","kasrlarni tushuntir"],
-    ru:["что значит технология","объясни flexbox","что такое второй закон Ньютона","объясни дроби"]
-  };
-  document.getElementById('chatSuggestions').innerHTML=sugg[LANG].map(x=>`<span class="sugg" onclick="askSuggestion(${JSON.stringify(x)})">${escapeHtml(x)}</span>`).join('');
-  const box=document.getElementById('chatBox');
-  if(!box.dataset.greeted){
-    if(!restoreChatHistory()){
-      box.innerHTML=`<div class="msg ai">${escapeHtml(UI[LANG].greet)}</div>`;
-    }
-    box.dataset.greeted='1';
-  }
-  checkAIHealth();
-}
-function askSuggestion(text){document.getElementById('chatInput').value=text;sendMsg();}
-function updateAIStatus(state){
-  const dot=document.querySelector('#aiStatus .ai-dot'), text=document.getElementById('aiStatusText'); if(!dot||!text)return;
-  dot.classList.toggle('busy',state==='busy');
-  const labels={ready:{en:'AI ready',uz:'AI tayyor',ru:'AI готов'},busy:{en:'Thinking…',uz:'O‘ylayapti…',ru:'Думает…'},offline:{en:'Offline tutor mode',uz:'Oflayn tutor rejimi',ru:'Офлайн-режим'},error:{en:'AI connection error',uz:'AI ulanish xatosi',ru:'Ошибка подключения AI'}};
-  text.textContent=labels[state]?.[LANG]||labels.ready[LANG];
-}
-async function checkAIHealth(){
-  try{
-    const controller=new AbortController();
-    const t=setTimeout(()=>controller.abort(),4000);
-    const res=await fetch(NEXORA_AI_CONFIG.healthEndpoint,{signal:controller.signal});
-    clearTimeout(t);
-    if(!res.ok)throw new Error('bad status');
-    const data=await res.json();
-    aiState.serverAvailable = !!data.ai_configured;
-    updateAIStatus(aiState.serverAvailable?'ready':'offline');
-  }catch(e){
-    aiState.serverAvailable = false;
-    updateAIStatus('offline');
-  }
-}
-function setChatBusy(busy){
-  aiState.busy=busy; const input=document.getElementById('chatInput'); const btn=document.querySelector('#page-ai .chat-input-row .btn-primary');
-  input.disabled=busy; if(btn){btn.disabled=busy;btn.textContent=busy?'…':UI[LANG].send;}
-  if(busy){showTyping();updateAIStatus('busy');}
-  else{hideTyping();updateAIStatus(aiState.serverAvailable===false?'offline':'ready');}
-}
-function showTyping(){
-  hideTyping();
-  const box=document.getElementById('chatBox');
-  const el=document.createElement('div');
-  el.className='msg ai typing'; el.id='typingIndicator';
-  el.innerHTML='<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
-  box.appendChild(el); box.scrollTop=box.scrollHeight;
-}
-function hideTyping(){document.getElementById('typingIndicator')?.remove();}
-function clearChat(){
-  aiState.history=[];aiState.controller?.abort();
-  localStorage.removeItem(CHAT_STORAGE_KEY);
-  const box=document.getElementById('chatBox');box.innerHTML=`<div class="msg ai">${escapeHtml(UI[LANG].greet)}</div>`;box.dataset.greeted='1';
-  updateAIStatus(aiState.serverAvailable===false?'offline':'ready');
-}
-function persistChatHistory(){
-  try{localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(aiState.history.slice(-NEXORA_AI_CONFIG.maxHistory*2)));}catch(e){/* storage full or unavailable, ignore */}
-}
-function restoreChatHistory(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY)||'null');
-    if(!Array.isArray(saved)||!saved.length)return false;
-    aiState.history=saved;
-    const box=document.getElementById('chatBox');
-    box.innerHTML='';
-    for(const turn of saved){
-      const text=(turn.parts||[]).map(p=>p.text||'').join('');
-      if(!text)continue;
-      appendChatMessage(turn.role==='user'?'user':'ai', text, false);
-    }
-    return true;
-  }catch(e){return false;}
-}
-async function sendMsg(){
-  if(aiState.busy)return; const input=document.getElementById('chatInput'),box=document.getElementById('chatBox'),text=input.value.trim(); if(!text)return;
-  appendChatMessage('user',text);input.value='';setChatBusy(true);
-  try{appendChatMessage('ai',await askNexoraAI(text));}
-  catch(error){console.error('Nexora AI:',error);appendChatMessage('ai',getAIResponse(text)+'\n\n'+getAIErrorHint(error));aiState.serverAvailable=false;}
-  finally{setChatBusy(false);box.scrollTop=box.scrollHeight;}
-}
-function appendChatMessage(role,text,persist=true){
-  const el=document.createElement('div');el.className=`msg ${role}`;
-  el.innerHTML = role==='ai' ? formatAIMessage(text) : escapeHtml(text);
-  const box=document.getElementById('chatBox');box.appendChild(el);box.scrollTop=box.scrollHeight;
-}
-function formatAIMessage(text){
-  let html=escapeHtml(text);
-  html=html.replace(/```([a-zA-Z0-9]*)\n?([\s\S]*?)```/g,(m,lang,code)=>`<pre class="code-block"><code>${code.trim()}</code></pre>`);
-  html=html.replace(/`([^`\n]+)`/g,'<code>$1</code>');
-  html=html.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
-  html=html.replace(/\n/g,'<br>');
-  return html;
-}
-function getAIErrorHint(error){
-  if(error?.name==='AbortError')return {en:'The request timed out, so here is the offline tutor\'s answer instead.',uz:'So‘rov vaqti tugadi, shu sabab oflayn tutor javobi ko‘rsatildi.',ru:'Истекло время ожидания, поэтому показан ответ офлайн-репетитора.'}[LANG];
-  return {en:'Using the offline tutor because the AI server could not be reached (start server.py with GROQ_API_KEY set for real AI answers).',uz:'AI serveriga ulanib bo‘lmadi, shu sabab oflayn tutor javobi ko‘rsatildi (haqiqiy AI javoblari uchun GROQ_API_KEY bilan server.py ishga tushiring).',ru:'Не удалось связаться с AI-сервером, показан ответ офлайн-репетитора (для реальных ответов AI запустите server.py с GROQ_API_KEY).'}[LANG];
-}
-
-async function askNexoraAI(promptText){
-  const controller=new AbortController();aiState.controller=controller;const timer=setTimeout(()=>controller.abort(),NEXORA_AI_CONFIG.timeoutMs);
-  try{
-    const response=await fetch(NEXORA_AI_CONFIG.endpoint,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        message:promptText,
-        language:LANG,
-        history:aiState.history.slice(-NEXORA_AI_CONFIG.maxHistory),
-        context:buildLessonContextFor(promptText)
-      }),
-      signal:controller.signal
-    });
-    const raw=await response.text();let data;try{data=JSON.parse(raw);}catch{throw new Error(`Invalid server response (${response.status})`);}
-    if(!response.ok)throw new Error(data?.detail||`HTTP ${response.status}`);
-    const answer=(data?.answer||'').trim();
-    if(!answer)throw new Error('The AI returned an empty response.');
-    aiState.serverAvailable=true;
-    aiState.history.push({role:'user',parts:[{text:promptText}]},{role:'model',parts:[{text:answer}]});
-    if(aiState.history.length>NEXORA_AI_CONFIG.maxHistory*2)aiState.history=aiState.history.slice(-NEXORA_AI_CONFIG.maxHistory*2);
-    persistChatHistory();
-    return answer;
-  }finally{clearTimeout(timer);aiState.controller=null;}
-}
-function buildLessonContextFor(promptText){
-  const q=promptText.toLowerCase();
-  const all=[...VOCAB,...CODING_LESSONS,...STEM_LESSONS];
-  const selected=all.filter(x=>JSON.stringify(x).toLowerCase().split(/[^a-zа-яёўқғҳ]+/i).some(w=>w.length>3&&q.includes(w))).slice(0,10);
-  return JSON.stringify(selected.length?selected:[...CODING_LESSONS.slice(0,2),...STEM_LESSONS.slice(0,2)]).slice(0,NEXORA_AI_CONFIG.maxContextChars);
-}
-function escapeHtml(s){const d=document.createElement('div');d.innerText=s;return d.innerHTML;}
-
-/* Original offline tutor kept as a fallback. */
-function normalizeText(s){return String(s||'').toLowerCase().replace(/[’']/g,"'").replace(/[^a-zа-яёўқғҳ0-9+\-*/().%=\s]/gi,' ').replace(/\s+/g,' ').trim()}
-function safeLocalMath(query){const q=normalizeText(query);if(!/^(what is|calculate|solve|compute|find|hisobla|yech|qancha|посчитай|реши|вычисли)\b/i.test(q)&&!/^[0-9\s().,+\-*/%^=]+$/.test(q))return null;const expr=q.replace(/^(what is|calculate|solve|compute|find|hisobla|yech|qancha|посчитай|реши|вычисли)\s+/i,'').replace(/(\d)\s*%/g,'($1/100)');if(!/^[0-9\s().,+\-*/%^=]+$/.test(expr)||expr.length>80)return null;try{const v=Function('"use strict";return ('+expr.replace(/\^/g,'**')+')')();if(!Number.isFinite(v))return null;return LANG==='uz'?`Javob: ${v}`:LANG==='ru'?`Ответ: ${v}`:`Answer: ${v}`}catch{return null}}
-function offlineFindLesson(q){const all=[...VOCAB,...CODING_LESSONS,...STEM_LESSONS],tokens=normalizeText(q).split(/\s+/).filter(x=>x.length>2);let best=null,scoreBest=0;for(const item of all){const hay=normalizeText(JSON.stringify(item));let score=0;for(const token of tokens)if(hay.includes(token))score+=token.length>5?2:1;if(score>scoreBest){best=item;scoreBest=score}}return scoreBest>=2?best:null}
-function getAIResponse(query){const q=normalizeText(query),math=safeLocalMath(query);if(math)return math;const explain=/\b(explain|teach|why|how|tushuntir|nima uchun|qanday|объясни|почему|как)\b/i.test(q);for(const v of VOCAB){if([v.en,v.uz,v.ru].some(w=>q.includes(normalizeText(w)))){if(LANG==='en')return `📖 ${v.en}\n\nUzbek: ${v.uz}\nRussian: ${v.ru}\nLevel: ${UI.en['lvl'+v.level]}\n\nTry using "${v.en}" in a sentence.`;if(LANG==='uz')return `📖 ${v.uz}\n\nInglizcha: ${v.en}\nRuscha: ${v.ru}\nDaraja: ${UI.uz['lvl'+v.level]}\n\n"${v.en}" so‘zidan gap tuzib ko‘ring.`;return `📖 ${v.ru}\n\nАнглийский: ${v.en}\nУзбекский: ${v.uz}\nУровень: ${UI.ru['lvl'+v.level]}\n\nПопробуйте составить предложение со словом "${v.en}".`}}const lesson=offlineFindLesson(q);if(lesson){const title=lesson.title[LANG]||lesson.title.en,body=lesson.body[LANG]||lesson.body.en,formula=lesson.formula?`\n\nFormula: ${lesson.formula}`:'';return explain?`🧠 ${title}\n\n${body}${formula}\n\n💡 ${LANG==='uz'?'Ta’rifni tushuning, misol yeching va fikrni o‘zingizga qayta tushuntiring.':LANG==='ru'?'Поймите определение, решите пример и объясните идею своими словами.':'Understand the definition, solve one example, then explain it in your own words.'}`:`📚 ${title}\n\n${body}${formula}`}if(/\b(plan|schedule|reja|режим|план)\b/i.test(q))return LANG==='uz'?'🗺️ Reja: 25 daqiqa o‘rganish → 5 daqiqa tanaffus → 20 daqiqa mashq → 5 daqiqa xatolarni ko‘rish.':LANG==='ru'?'🗺️ План: 25 минут изучения → 5 минут перерыв → 20 минут практики → 5 минут разбора ошибок.':'🗺️ Plan: 25 minutes learning → 5 minutes break → 20 minutes practice → 5 minutes reviewing mistakes.';if(/\b(hello|hi|salom|привет)\b/i.test(q))return UI[LANG].greet;return LANG==='uz'?'Oflayn rejimda ham yordam bera olaman. Mavzu yoki oddiy hisob-kitob yuboring. Study Hub’da reja, taymer va kartochkalar bor.':LANG==='ru'?'Я могу помогать и офлайн. Напишите тему или пример. В Учебном центре есть план, таймер и карточки.':'I can still help offline. Name a topic or send a calculation. Study Hub has a plan, focus timer, and flashcards.'}
-
-/* ============================= STUDY HUB ============================= */
-const STUDY_KEY='nexora_study_v2';let focusTimer={seconds:1500,running:false,interval:null,total:1500},reviewState={index:0,flipped:false,queue:[]};
-function studyLoad(){try{return JSON.parse(localStorage.getItem(STUDY_KEY)||'{}')}catch{return {}}}function studySave(s){try{localStorage.setItem(STUDY_KEY,JSON.stringify(s))}catch{}}
-function initStudyHub(){const s=studyLoad();document.getElementById('goalInput').value=s.goal||'';document.getElementById('goalMinutes').value=s.goalMinutes||60;document.getElementById('studyNotes').value=s.notes||'';renderGoal();renderReviewQueue();updateFocusTimer()}
-function saveStudyGoal(){const s=studyLoad();s.goal=document.getElementById('goalInput').value.trim();s.goalMinutes=Math.max(5,Math.min(600,Number(document.getElementById('goalMinutes').value)||60));s.goalDone=Number(s.goalDone)||0;studySave(s);renderGoal();showToast('Study goal saved.')}function completeGoalStep(){const s=studyLoad();s.goalDone=Math.min(Number(s.goalMinutes)||60,(Number(s.goalDone)||0)+25);studySave(s);renderGoal()}function renderGoal(){const s=studyLoad(),t=Number(s.goalMinutes)||60,d=Math.min(t,Number(s.goalDone)||0),p=Math.round(d/t*100);document.getElementById('goalBarFill').style.width=p+'%';document.getElementById('goalProgressText').textContent=p+'%'}
-function setFocusTimer(m){resetFocusTimer();focusTimer.total=m*60;focusTimer.seconds=m*60;updateFocusTimer()}function updateFocusTimer(){const m=Math.floor(focusTimer.seconds/60).toString().padStart(2,'0'),s=(focusTimer.seconds%60).toString().padStart(2,'0');document.getElementById('focusTimer').textContent=m+':'+s;document.getElementById('timerMode').textContent=m+':'+s;document.getElementById('timerStartBtn').textContent=focusTimer.running?'Pause':'Start'}function toggleFocusTimer(){if(focusTimer.running){clearInterval(focusTimer.interval);focusTimer.running=false;document.getElementById('timerStatus').textContent='Paused.'}else{focusTimer.running=true;document.getElementById('timerStatus').textContent='Focus mode active.';focusTimer.interval=setInterval(()=>{focusTimer.seconds--;updateFocusTimer();if(focusTimer.seconds<=0){clearInterval(focusTimer.interval);focusTimer.running=false;focusTimer.seconds=focusTimer.total;updateFocusTimer();document.getElementById('timerStatus').textContent='Session complete — take a short break.';showToast('Focus session complete. Nice work.')}},1000)}updateFocusTimer()}function resetFocusTimer(){clearInterval(focusTimer.interval);focusTimer.running=false;focusTimer.seconds=focusTimer.total||1500;updateFocusTimer();document.getElementById('timerStatus').textContent='Ready to focus.'}
-function buildReviewQueue(){const s=studyLoad(),saved=Array.isArray(s.review)?s.review:[],map=new Map(saved.map(x=>[x.id,x]));return VOCAB.map(v=>map.get(v.id)||{id:v.id,box:0,next:0}).filter(x=>(x.next||0)<=Date.now()&&x.box<5).sort((a,b)=>(a.next||0)-(b.next||0)).slice(0,12)}function currentReview(){const q=reviewState.queue;return q.length?VOCAB.find(v=>v.id===q[reviewState.index%q.length]):null}function renderReviewQueue(){reviewState.queue=buildReviewQueue();reviewState.index=0;reviewState.flipped=false;document.getElementById('reviewCount').textContent=reviewState.queue.length;const v=currentReview(),f=document.getElementById('flashcardFront'),b=document.getElementById('flashcardBack');if(!v){f.textContent='No cards due right now.';b.textContent='Practice vocabulary in Language Lab.';b.classList.remove('hidden');return}f.textContent=v.en;b.textContent=v.uz+' · '+v.ru;b.classList.add('hidden');document.getElementById('flashcard').classList.remove('flipped')}function flipFlashcard(){reviewState.flipped=!reviewState.flipped;document.getElementById('flashcardBack').classList.toggle('hidden',!reviewState.flipped);document.getElementById('flashcard').classList.toggle('flipped',reviewState.flipped)}function reviewAnswer(ok){const v=currentReview();if(!v)return;const s=studyLoad(),a=Array.isArray(s.review)?s.review:[];let x=a.find(i=>i.id===v.id);if(!x){x={id:v.id,box:0,next:0};a.push(x)}x.box=ok?Math.min(5,x.box+1):0;x.next=Date.now()+(ok?[1,2,4,7,14][Math.max(0,x.box-1)]:0)*86400000;s.review=a;studySave(s);renderReviewQueue()}
-function saveStudyNotes(){const s=studyLoad();s.notes=document.getElementById('studyNotes').value;studySave(s);document.getElementById('notesSaved').textContent='Saved just now';showToast('Notes saved locally.')}function clearStudyNotes(){document.getElementById('studyNotes').value='';saveStudyNotes()}function generateStudyPlan(){const subject=document.getElementById('planSubject').value,mins=Number(document.getElementById('planTime').value),days=Number(document.getElementById('planDays').value),names={math:'Mathematics',physics:'Physics',coding:'Coding',languages:'Languages'},o=[];for(let d=1;d<=days;d++){const learn=Math.round(mins*.45),practice=Math.round(mins*.35),review=Math.max(5,mins-learn-practice);o.push(`<div class="plan-item"><span class="plan-num">D${d}</span><div><strong>${names[subject]}</strong><br><span class="sub">${learn} min learn · ${practice} min practice · ${review} min review</span></div></div>`)}document.getElementById('studyPlanOutput').innerHTML=o.join('')}
-
-/* ============================= ACCOUNT + PRICING ============================= */
-const TIER_DATA=[{key:'free',price:0,priceId:null,featured:false,limits:{messages:20,model:'20B AI Model',extra:'Basic history'}},{key:'plus',price:4.99,priceId:'price_1UA93GFKLV0CUEsDrY2zR1C2',featured:false,limits:{messages:200,model:'70B Llama Model',extra:'Fast streaming'}},{key:'pro',price:7.99,priceId:'price_1UA94kFKLV0CUEsDbKVOHzWO',featured:true,limits:{messages:1000,model:'120B Flagship Model',extra:'Priority queue'}},{key:'elite',price:14.99,priceId:'price_1UA95bFKLV0CUEsD8xzPgdQH',featured:false,limits:{messages:Infinity,model:'120B Flagship Model',extra:'Max context & history'}}];
-const accountState={loaded:false,signedIn:false,user:null,tier:'free',usage:0,dailyLimit:20};
-function tierInfo(k){return TIER_DATA.find(x=>x.key===k)||TIER_DATA[0]}function escapeAttr(v){return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}function showToast(m){document.querySelector('.toast')?.remove();const e=document.createElement('div');e.className='toast';e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),4200)}function showLogin(){document.getElementById('loginOverlay')?.style.setProperty('display','flex')}function hideLogin(){document.getElementById('loginOverlay')?.style.setProperty('display','none')}
-async function startGoogleLogin(){
-  const btn=document.getElementById('googleLoginBtn');
-  const err=document.getElementById('authError');
-  if(btn){btn.disabled=true;btn.querySelector('span').textContent='Connecting to Google…';}
-  if(err){err.textContent='';err.classList.remove('show');}
-  try{
-    if(location.protocol==='file:'){
-      throw new Error('Nexora must be opened through your web server, not directly as a file. Start server.py and open the server address.');
-    }
-    // Do not call a separate /status endpoint here. Older/newer server builds may
-    // not expose that optional route; the actual OAuth route is the source of truth.
-    location.assign('/api/auth/google/login');
-  }catch(e){
-    const msg=e?.message||UI[LANG].authUnavailable;
-    if(err){err.textContent=msg;err.classList.add('show');}
-    showToast(msg);
-    if(btn){btn.disabled=false;btn.querySelector('span').textContent=UI[LANG].loginBtn;}
-  }
-}
-function handleAuthCallbackMessage(){
-  const p=new URLSearchParams(location.search),a=p.get('auth');
-  if(a==='success'){
-    showToast('Signed in successfully.');
-    history.replaceState({},'',location.pathname+location.hash);
-    // Explicitly refresh the account after OAuth instead of relying on a stale UI state.
-    setTimeout(loadAccount,0);
-  }else if(a==='error'){
-    let msg=p.get('message')||UI[LANG].authUnavailable;
-    try{msg=decodeURIComponent(msg);}catch{}
-    showToast(msg);
-    const err=document.getElementById('authError');
-    if(err){err.textContent=msg;err.classList.add('show');}
-    history.replaceState({},'',location.pathname+location.hash);
-  }
-}
-async function loadAccount(){
-  try{
-    const r=await fetch('/api/auth/me',{headers:{Accept:'application/json'},credentials:'include',cache:'no-store'});
-    const d=await r.json().catch(()=>({}));
-    // 401/403 simply means there is no active session. Other failures should be visible.
-    if(r.status===401||r.status===403){
-      accountState.signedIn=false;accountState.user=null;accountState.tier='free';accountState.usage=0;accountState.dailyLimit=20;
-    }else if(!r.ok){
-      throw new Error(d.detail||d.error||`Account request failed (HTTP ${r.status})`);
-    }else{
-      accountState.signedIn=!!d.authenticated;
-      accountState.user=d.user||null;
-      const t=d.tier||d.user?.tier||'free';
-      accountState.tier=TIER_DATA.some(x=>x.key===t)?t:'free';
-      accountState.usage=Number(d.usage||0);
-      accountState.dailyLimit=d.daily_limit??tierInfo(accountState.tier).limits.messages;
-    }
-  }catch(e){
-    accountState.signedIn=false;accountState.user=null;accountState.tier='free';accountState.usage=0;accountState.dailyLimit=20;
-    if(location.protocol!=='file:') showToast('Could not reach the account server. Your local lessons still work.');
-    console.error('Nexora account:',e);
-  }
-  accountState.loaded=true;renderAuthArea();renderPricing();renderUsageBanner();
-}
-function renderAuthArea(){const e=document.getElementById('authArea');if(!e)return;if(!accountState.signedIn){e.innerHTML='<button class="auth-link" onclick="showLogin()">Sign in</button>';return}const u=accountState.user||{},n=u.name||u.email||'Student',a=u.picture||u.avatar_url||'',img=a?`<img class="avatar" src="${escapeAttr(a)}" alt="">`:'';const label=accountState.tier[0].toUpperCase()+accountState.tier.slice(1);e.innerHTML=`${img}<span class="auth-name">${escapeHtml(n)}</span><span class="tier-badge tier-${escapeAttr(accountState.tier)}">${label}</span><button class="auth-link" onclick="logoutUser()">${UI[LANG].signOut}</button>`}
-async function logoutUser(){try{await fetch('/api/auth/logout',{method:'POST',credentials:'include'})}catch{}accountState.signedIn=false;accountState.user=null;accountState.tier='free';accountState.usage=0;accountState.dailyLimit=20;renderAuthArea();renderPricing();renderUsageBanner();showToast('Signed out.')}
-function renderUsageBanner(){document.getElementById('usageBanner')?.remove();const a=document.querySelector('#page-ai .ai-hero-card');if(!a||!accountState.signedIn)return;const l=Number.isFinite(accountState.dailyLimit)?accountState.dailyLimit:Infinity,p=l===Infinity?0:Math.min(100,Math.round(accountState.usage/Math.max(1,l)*100)),b=document.createElement('div');b.id='usageBanner';b.className='usage-banner';b.innerHTML=`<span>${l===Infinity?accountState.usage+' messages today · Unlimited':accountState.usage+' / '+l+' messages today'}</span><div class="bar"><div class="bar-fill" style="width:${p}%"></div></div>`;a.after(b)}
-function renderPricing(){const g=document.getElementById('pricingGrid');if(!g)return;const t=UI[LANG],names={free:{en:'Free',uz:'Bepul',ru:'Бесплатный'},plus:{en:'Plus',uz:'Plus',ru:'Plus'},pro:{en:'Pro',uz:'Pro',ru:'Pro'},elite:{en:'Elite',uz:'Elita',ru:'Elite'}};g.innerHTML=TIER_DATA.map(x=>{const name=names[x.key][LANG],amount=x.price===0?`<div class="price-amount free">${LANG==='uz'?'Bepul':LANG==='ru'?'Бесплатно':'Free'}</div>`:`<div class="price-amount">$${x.price.toFixed(2)}<span>${t.perMonth}</span></div>`,msg=x.limits.messages===Infinity?(LANG==='uz'?'Cheksiz':LANG==='ru'?'Безлимитно':'Unlimited'):`${x.limits.messages.toLocaleString()} ${LANG==='ru'?'сообщ./день':'msg/day'}`,button=accountState.tier===x.key?`<button class="btn btn-disabled" disabled>${t.currentPlan}</button>`:x.key==='free'?`<button class="btn btn-ghost" onclick="chooseFreePlan()">${t.freeBtn}</button>`:`<button class="btn btn-primary" onclick="checkout('${x.priceId}')">${t.upgradeBtn} ${name}</button>`;return `<div class="price-card ${accountState.tier===x.key?'current ':''}${x.featured?'featured':''}">${x.featured?'<div class="price-kicker">Recommended</div>':''}<div class="price-name">${name}</div>${amount}<ul>${[msg,x.limits.model,x.limits.extra].map(v=>`<li>${escapeHtml(v)}</li>`).join('')}</ul>${button}</div>`}).join('');const p=document.getElementById('portalLink');if(p)p.innerHTML=accountState.signedIn?`<button class="btn btn-sm btn-ghost" onclick="openBillingPortal()">${t.manageBilling}</button>`:`<span>${t.loginSub}</span>`}
-function chooseFreePlan(){if(accountState.signedIn)showToast('You are already using the free plan.');else showLogin()}async function checkout(id){if(!accountState.signedIn){showLogin();showToast('Sign in first so your subscription is linked to your account.');return}try{const r=await fetch('/api/checkout?price_id='+encodeURIComponent(id),{credentials:'include',headers:{Accept:'application/json'}}),d=await r.json().catch(()=>({}));if(d.url){location.href=d.url;return}throw Error(d.detail||d.error||'Checkout is unavailable.')}catch(e){showToast(e.message)}}async function openBillingPortal(){try{const r=await fetch('/api/billing/portal',{credentials:'include',headers:{Accept:'application/json'}}),d=await r.json().catch(()=>({}));if(d.url){location.href=d.url;return}throw Error(d.detail||'Billing portal is unavailable.')}catch(e){showToast(e.message)}}function getCurrentTier(){return accountState.tier||'free'}function setAccountTier(t){if(!TIER_DATA.some(x=>x.key===t))t='free';accountState.tier=t;renderAuthArea();renderPricing();renderUsageBanner()}
-
-
-
-/* Auth UX: close with Escape or by clicking the backdrop. */
-document.getElementById('loginOverlay')?.addEventListener('click',e=>{if(e.target.id==='loginOverlay')hideLogin();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){hideLogin();document.getElementById('upgradeModal')?.style.setProperty('display','none');}});
-
-/* ============================= INIT ============================= */
-document.getElementById('langSelect').value = LANG;
-applyI18n();
-initStudyHub();
-handleAuthCallbackMessage();
-renderAuthArea();
-renderPricing();
-loadAccount();
-</script>
-</body>
-</html>
+from __future__ import annotations
+
+import os
+from datetime import date
+
+import httpx
+import stripe
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from auth import (
+    build_google_authorize_url,
+    clear_session_cookie,
+    create_jwt,
+    exchange_code_for_userinfo,
+    get_current_user,
+    get_current_user_optional,
+    set_session_cookie,
+    upsert_user_from_google,
+    user_to_public_dict,
+    verify_oauth_state,
+)
+from db import engine, get_db
+from models import Base, User
+from subscription import PRICE_ID_TO_TIER, get_tier, has_quota_remaining
+
+app = FastAPI(title="Nexora Academy API")
+
+_tables_ready = False
+
+
+@app.middleware("http")
+async def ensure_tables(request: Request, call_next):
+    # Serverless has no one-off "run this script first" step, so make sure
+    # the tables exist on first use instead. This is a cheap no-op check
+    # after the first successful call in a warm instance.
+    global _tables_ready
+    if not _tables_ready:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        _tables_ready = True
+    return await call_next(request)
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+API_KEY = os.getenv("GROQ_API_KEY", "")
+PAY_KEY = os.getenv("STRIPE_SECRET_KEY", "")
+WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+
+stripe.api_key = PAY_KEY
+
+_allowed_origins = [FRONTEND_URL]
+if extra := os.getenv("EXTRA_CORS_ORIGINS", ""):
+    _allowed_origins.extend([o.strip() for o in extra.split(",") if o.strip()])
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_allowed_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+)
+
+
+@app.get("/api/health")
+async def health():
+    return {"status": "ok", "ai_configured": bool(API_KEY)}
+
+
+# --- Auth ---------------------------------------------------------------
+
+@app.get("/api/auth/google/login")
+async def google_login():
+    redirect_uri = f"{BACKEND_URL}/api/auth/google/callback"
+    url = build_google_authorize_url(redirect_uri)
+    return Response(status_code=302, headers={"Location": url})
+
+
+@app.get("/api/auth/google/callback")
+async def google_callback(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    code = request.query_params.get("code")
+    state = request.query_params.get("state")
+    error = request.query_params.get("error")
+
+    if error or not code or not state or not verify_oauth_state(state):
+        return Response(
+            status_code=302,
+            headers={"Location": f"{FRONTEND_URL}/?auth=error&message=Sign-in+failed"},
+        )
+
+    redirect_uri = f"{BACKEND_URL}/api/auth/google/callback"
+
+    try:
+        userinfo = await exchange_code_for_userinfo(code, redirect_uri)
+    except Exception:
+        return Response(
+            status_code=302,
+            headers={"Location": f"{FRONTEND_URL}/?auth=error&message=Sign-in+failed"},
+        )
+
+    if not userinfo.get("sub"):
+        return Response(
+            status_code=302,
+            headers={"Location": f"{FRONTEND_URL}/?auth=error&message=No+profile+returned"},
+        )
+
+    user = await upsert_user_from_google(db, userinfo)
+    token = create_jwt(user.id)
+
+    redirect = Response(
+        status_code=302,
+        headers={"Location": f"{FRONTEND_URL}/?auth=success"},
+    )
+    set_session_cookie(redirect, token)
+    return redirect
+
+
+@app.get("/api/auth/me")
+async def get_me(user: User | None = Depends(get_current_user_optional)):
+    if not user:
+        raise HTTPException(status_code=401, detail="Not signed in")
+    tier = get_tier(user.tier)
+    _reset_daily_usage_if_new_day(user)
+    return user_to_public_dict(user, tier.daily_message_limit)
+
+
+@app.post("/api/auth/logout")
+async def logout():
+    response = Response(status_code=200, content='{"ok":true}', media_type="application/json")
+    clear_session_cookie(response)
+    return response
+
+
+# --- Chat -----------------------------------------------------------------
+
+class ChatHistoryTurn(BaseModel):
+    role: str
+    parts: list[dict]
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=4000)
+    language: str = "en"
+    history: list[ChatHistoryTurn] = []
+    context: str = ""
+
+
+def _reset_daily_usage_if_new_day(user: User) -> None:
+    today = date.today()
+    if user.last_message_date != today:
+        user.last_message_date = today
+        user.daily_message_count = 0
+
+
+@app.post("/api/chat")
+async def chat(
+    body: ChatRequest,
+    user: User | None = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    if not API_KEY:
+        raise HTTPException(status_code=503, detail="AI backend is not configured")
+
+    tier_key = user.tier if user else "free"
+    tier = get_tier(tier_key)
+
+    if user:
+        _reset_daily_usage_if_new_day(user)
+        if not has_quota_remaining(user.daily_message_count, user.tier):
+            raise HTTPException(
+                status_code=429,
+                detail="Daily message limit reached for your plan. Upgrade for more.",
+            )
+
+    system_prompt = (
+        "You are the Nexora Academy assistant, a friendly, patient tutor for "
+        "languages, coding, and math/physics. Respond in the language code "
+        f"'{body.language}' unless the user clearly writes in another language. "
+        "Keep answers concise and encouraging. Use the following lesson "
+        f"context if relevant, otherwise ignore it: {body.context}"
+    )
+
+    messages = [{"role": "system", "content": system_prompt}]
+    for turn in body.history[-tier.history_turns:]:
+        role = "assistant" if turn.role == "model" else "user"
+        text = "".join(p.get("text", "") for p in turn.parts)
+        if text:
+            messages.append({"role": role, "content": text})
+    messages.append({"role": "user", "content": body.message})
+
+    try:
+        async with httpx.AsyncClient(timeout=25.0) as client:
+            resp = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {API_KEY}"},
+                json={"model": tier.model, "messages": messages, "max_tokens": tier.max_tokens},
+            )
+        resp.raise_for_status()
+        answer = resp.json()["choices"][0]["message"]["content"].strip()
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=502, detail=f"Upstream error: {e.response.status_code}")
+    except Exception:
+        raise HTTPException(status_code=502, detail="Upstream request failed")
+
+    if user:
+        user.daily_message_count += 1
+        await db.commit()
+
+    return {"answer": answer}
+
+
+# --- Billing ----------------------------------------------------------------
+
+@app.post("/api/checkout")
+async def create_checkout_session(
+    price_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if not PAY_KEY:
+        raise HTTPException(status_code=503, detail="Payments are not configured")
+    if price_id not in PRICE_ID_TO_TIER:
+        raise HTTPException(status_code=400, detail="Unknown plan")
+
+    try:
+        if not user.stripe_customer_id:
+            customer = stripe.Customer.create(email=user.email, name=user.name)
+            user.stripe_customer_id = customer.id
+            await db.commit()
+
+        session = stripe.checkout.Session.create(
+            mode="subscription",
+            customer=user.stripe_customer_id,
+            line_items=[{"price": price_id, "quantity": 1}],
+            success_url=f"{FRONTEND_URL}/?checkout=success",
+            cancel_url=f"{FRONTEND_URL}/?checkout=cancelled",
+            client_reference_id=user.id,
+            allow_promotion_codes=True,
+        )
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=502, detail=e.user_message or str(e))
+
+    return {"url": session.url}
+
+
+@app.get("/api/billing/portal")
+async def billing_portal(user: User = Depends(get_current_user)):
+    if not PAY_KEY:
+        raise HTTPException(status_code=503, detail="Payments are not configured")
+    if not user.stripe_customer_id:
+        raise HTTPException(status_code=400, detail="No billing account on file yet")
+
+    try:
+        session = stripe.billing_portal.Session.create(
+            customer=user.stripe_customer_id,
+            return_url=f"{FRONTEND_URL}/?billing=done",
+        )
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=502, detail=e.user_message or str(e))
+
+    return {"url": session.url}
+
+
+@app.post("/api/stripe/webhook")
+async def stripe_webhook(request: Request, db: AsyncSession = Depends(get_db)):
+    if not WEBHOOK_SECRET:
+        raise HTTPException(status_code=503, detail="Webhook not configured")
+
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature", "")
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, WEBHOOK_SECRET)
+    except (ValueError, stripe.error.SignatureVerificationError):
+        raise HTTPException(status_code=400, detail="Invalid webhook signature")
+
+    event_type = event["type"]
+    obj = event["data"]["object"]
+
+    if event_type == "checkout.session.completed":
+        customer_id = obj.get("customer")
+        client_reference_id = obj.get("client_reference_id")
+        subscription_id = obj.get("subscription")
+
+        result = await db.execute(select(User).where(User.id == client_reference_id))
+        user = result.scalar_one_or_none()
+        if user:
+            user.stripe_customer_id = customer_id
+            user.stripe_subscription_id = subscription_id
+            if subscription_id:
+                sub = stripe.Subscription.retrieve(subscription_id)
+                price_id = sub["items"]["data"][0]["price"]["id"]
+                user.tier = PRICE_ID_TO_TIER.get(price_id, user.tier)
+            await db.commit()
+
+    elif event_type in ("customer.subscription.updated", "customer.subscription.deleted"):
+        customer_id = obj.get("customer")
+        result = await db.execute(select(User).where(User.stripe_customer_id == customer_id))
+        user = result.scalar_one_or_none()
+        if user:
+            if event_type == "customer.subscription.deleted" or obj.get("status") in (
+                "canceled",
+                "unpaid",
+            ):
+                user.tier = "free"
+                user.stripe_subscription_id = None
+            else:
+                items = obj.get("items", {}).get("data", [])
+                if items:
+                    price_id = items[0]["price"]["id"]
+                    user.tier = PRICE_ID_TO_TIER.get(price_id, user.tier)
+            await db.commit()
+
+    return {"received": True}
