@@ -31,3 +31,4 @@ class User(Base):
     daily_message_count: Mapped[int] = mapped_column(Integer, default=0)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+ 
