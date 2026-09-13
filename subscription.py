@@ -117,4 +117,4 @@ def has_quota_remaining(daily_usage: int, tier_key: Optional[str]) -> bool:
     tier = get_tier(tier_key)
     if tier.daily_message_limit < 0:
         return True
-    return daily_usage < tier.daily_message_limit
+    return daily_usage < tier.daily_message_limit 
