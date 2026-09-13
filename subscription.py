@@ -110,3 +110,11 @@ def get_tier(tier_key: Optional[str]) -> TierConfig:
     if not tier_key or tier_key not in TIERS:
         return TIERS["free"]
     return TIERS[tier_key]
+
+
+def has_quota_remaining(daily_usage: int, tier_key: Optional[str]) -> bool:
+    """True if the user can send another message today under their tier."""
+    tier = get_tier(tier_key)
+    if tier.daily_message_limit < 0:
+        return True
+    return daily_usage < tier.daily_message_limit
