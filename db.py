@@ -1,49 +1,53 @@
+"""
+Database engine/session setup for Nexora Academy.
+
+Reads DATABASE_URL from the environment. Expects a Postgres URL using the
+asyncpg driver, e.g.:
+
+    postgresql+asyncpg://user:password@host:5432/dbname
+
+If you're given a plain "postgresql://..." URL (common with managed DB
+providers), this module will automatically rewrite it to use the asyncpg
+driver so you don't have to edit it by hand.
+"""
+
+from __future__ import annotations
+
 import os
-import asyncpg
-from dotenv import load_dotenv
 
-load_dotenv()
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-pool = None
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://localhost/nexora")
 
-async def init_db():
-    global pool
-    if not DATABASE_URL:
-        print("DATABASE_URL not set; database features running unattached.")
-        return
-    pool = await asyncpg.create_pool(dsn=DATABASE_URL)
-    async with pool.acquire() as conn:
-        await conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                google_id VARCHAR(255) UNIQUE,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                name VARCHAR(255),
-                tier VARCHAR(50) DEFAULT 'free',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
+# Normalize common URL forms to the asyncpg driver string SQLAlchemy expects.
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+elif DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
 
-            CREATE TABLE IF NOT EXISTS learner_profiles (
-                user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-                english_level VARCHAR(10),
-                uzbek_level VARCHAR(10),
-                russian_level VARCHAR(10),
-                coding_level VARCHAR(10),
-                maths_level VARCHAR(10),
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
+engine = create_async_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10,
+    echo=False,
+)
 
-            CREATE TABLE IF NOT EXISTS user_stats (
-                user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-                current_streak INT DEFAULT 0,
-                best_streak INT DEFAULT 0,
-                today_xp INT DEFAULT 0,
-                total_xp INT DEFAULT 0,
-                daily_requests_count INT DEFAULT 0,
-                last_active_date DATE DEFAULT CURRENT_DATE
-            );
-        """)
+AsyncSessionLocal = async_sessionmaker(
+    engine,
+    expire_on_commit=False,
+    class_=AsyncSession,
+)
 
-async def get_db_pool():
-    return pool
+
+async def get_db():
+    """FastAPI dependency that yields a DB session and always closes it."""
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
